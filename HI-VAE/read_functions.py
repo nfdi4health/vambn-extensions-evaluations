@@ -26,7 +26,7 @@ def read_data(data_file, types_file, miss_file, true_miss_file):
         data = np.array(data)
     
     #Sustitute NaN values by something (we assume we have the real missing value mask)
-    if true_miss_file:
+    if true_miss_file and os.path.getsize(true_miss_file) > 0:
         with open(true_miss_file, 'r') as f:
             missing_positions = [[int(x) for x in rec] for rec in csv.reader(f, delimiter=',')]
             missing_positions = np.array(missing_positions)
