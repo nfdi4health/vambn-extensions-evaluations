@@ -1,0 +1,14 @@
+col,type,dim,nclass
+SA_Type_VIS00,cat,3,3
+TASTE_Sweetness_VIS00,ordinal,10,10
+TASTE_Sourness_VIS00,ordinal,10,10
+FORM_Redness_VIS00,ordinal,10,10
+FORM_Weight_VIS00,ordinal,10,10
+TASTE_Sweetness_VIS01,ordinal,10,10
+TASTE_Sourness_VIS01,ordinal,10,10
+FORM_Redness_VIS01,ordinal,10,10
+FORM_Weight_VIS01,ordinal,10,10
+TASTE_Sweetness_VIS02,ordinal,10,10
+TASTE_Sourness_VIS02,ordinal,10,10
+FORM_Redness_VIS02,ordinal,10,10
+FORM_Weight_VIS02,ordinal,10,10

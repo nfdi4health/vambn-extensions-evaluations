@@ -1,0 +1,7 @@
+lrates,nbatch,wdecay,ydims,sdims,files
+0.01,1,0,1,1,form_VIS00.csv
+0.01,1,0,1,1,form_VIS01.csv
+0.01,1,0,1,1,form_VIS02.csv
+0.01,1,0,1,1,taste_VIS00.csv
+0.01,1,0,1,1,taste_VIS01.csv
+0.01,1,0,1,1,taste_VIS02.csv
