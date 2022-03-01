@@ -16,6 +16,7 @@ def place_holder_types(types_file, batch_size):
     #Read the types of the data from the files
     with open(types_file) as f:
         types_list = [{k: v for k, v in row.items()}
+        # types_list = [{k: v if k == 'type' else int(v) for k, v in row.items()} in case of
         for row in csv.DictReader(f, skipinitialspace=True)]
         
     #Create placeholders for every data type, with appropriate dimensions

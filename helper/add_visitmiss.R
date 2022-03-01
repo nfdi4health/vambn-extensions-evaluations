@@ -33,6 +33,6 @@ add_visitmiss<-function(discdata){
   rm10<-rownames(d10)[duplicated(d10,fromLast=TRUE)]
   rm11<-rownames(d11)[duplicated(d11,fromLast=TRUE)]
   rm<-c(rm1,rm2,rm3,rm4,rm5,rm6,rm7,rm8,rm9,rm10,rm11) # orphaned nodes are those whose immediate parent AUX is identical to the visitmiss at that visit
-  return list(data=discdata,rm=rm)
+  return(list(data=discdata,rm=rm))
   
 }
