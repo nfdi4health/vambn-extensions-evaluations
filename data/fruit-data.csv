@@ -2,8 +2,12 @@ SUBJID,Type_BASELINE,Sweetness_BASELINE,Sourness_BASELINE,Redness_BASELINE,Weigh
 M01,mango,0,5,0,2,8,2,3,8,9,2,9,8
 M02,mango,0,6,0,3,7,3,2,9,8,1,9,9
 M03,mango,0,,0,2,7,,3,8,9,,8,8
+M04,mango,,,,,6,4,2,7,9,2,9,8
 A01,apple,2,8,1,2,4,6,5,6,5,4,5,7
 A02,apple,2,9,0,2,3,6,4,6,5,5,4,6
 A03,apple,1,9,,1,,5,4,5,,5,5,6
+A04,apple,2,8,0,2,5,5,,,6,4,3,7
 B01,banana,1,2,0,4,6,0,0,7,9,0,0,7
 B02,banana,1,0,0,5,5,0,0,8,8,0,0,8
+B03,banana,1,1,0,4,,,,,8,0,0,6
+B04,banana,1,1,0,4,5,0,0,8,,,,

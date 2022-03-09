@@ -20,7 +20,7 @@ source('helper/save_VPmisslist.R')
 # study specific helpers
 source('helper/merge_data_fruit.R')
 source('helper/addnoise.R')
-source('helper/add_visitmiss.R')
+source('helper/add_visitmiss_fruit.R')
 source('helper/make_bl_wl_fruit.R')
 
 ############################
@@ -35,6 +35,7 @@ mth<-"mle" # BN method
 
 # Load data & remaining formatting of standalone
 data<-merge_data_fruit() # merge imputed standalone and zcodes from HIVAE
+#this merges all info, incl AUX, into one table (data) and also writes that into data_final.rds
 
 # remove subject variable
 pt<-data$SUBJID
@@ -47,14 +48,17 @@ discdata<-addnoise(data,0.01)
 # This node represents whether a whole visit is missing for a participant
 # AUX variables will be connected through these and it will account for their high correlation
 # AUX variables that are identical to the visitmiss variables will be removed and its child node connected directly to the visitmiss variable at that visit
-out<-add_visitmiss(discdata)
+out<-add_visitmiss_fruit(discdata)
 discdata<-out[['data']]
 rm<-out[['rm']]
 discdata<-discdata[ , !(names(discdata) %in% rm)]
 # remove AUX that are almost identical to visitmiss nodes
 lowaux<-discdata[,grepl('AUX_',colnames(discdata))&!(colnames(discdata) %in% rm)]
-# lowaux<-colnames(lowaux)[sapply(colnames(lowaux),function(x) sum(as.numeric(as.character(lowaux[,x])))<=5)]
-# discdata<-discdata[ , !(names(discdata) %in% lowaux)]
+#this tmp_thing is <2-dimensional if there weren't at least 2 working dX-vars in add_visitmiss, and breaks everything
+# tmp_thing<-sapply(colnames(lowaux),function(x) sum(as.numeric(as.character(lowaux[,x])))<=5) #only if 5 vars, ignore this because tiny data
+tmp_thing<-sapply(colnames(lowaux),function(x) sum(as.numeric(as.character(lowaux[,x])))<=1)
+lowaux<-colnames(lowaux)[tmp_thing]
+discdata<-discdata[ , !(names(discdata) %in% lowaux)]
 orphans<-gsub('AUX_','',rm)
 orphans<-unname(sapply(orphans,function(x) ifelse(!grepl('SA_',x),paste0('zcode_',x),x)))
 
@@ -106,9 +110,9 @@ real$SUBJID<-NULL
 write.csv(real,paste0(data_out,'_RealPPts.csv'),row.names=FALSE)
 
 # save out VP misslist (for HIVAE decoding, tells HIVAE which zcodes the BN considers missing)
-save_VPmisslist(virtual,'data/HI-VAE/')
+save_VPmisslist(virtual,'HI-VAE/') #originally data/HI-VAE/
 
 ############################
 ############################ plot graphs in cytoscape (careful about dashed line maps!)
 ############################
-source('network_plot_paper.R')
+# source('network_plot_paper.R')

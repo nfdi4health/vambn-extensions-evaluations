@@ -14,15 +14,14 @@ merge_data_fruit<-function(){
   data_aux<-as.data.frame(lapply(data_aux,factor))
   
   #(meta)
-  # data_meta<-read.csv('data/HI-VAE/metaenc.csv')
-  data_meta<-read.csv('HI-VAE/metaenc.csv')
+  data_meta<-read.csv('HI-VAE/metaenc.csv') #originally data/HI-VAE/metaenc.csv
 
   # merge all
   data<-list(data_meta,data_aux,data_stalone) %>% reduce(merge, by = 'SUBJID')
   
   #flag 0 var cols
   print(colnames(data)[-includeVar(data)])
-  data<-data[includeVar(data)]
+  data<-data[includeVar(data)] #this removes all cols full of zeros => scodes and all the AUX cols where no entry is marked as 1
   
   data$SUBJID<-factor(data$SUBJID)
   # refactor all factor columns (so there are no empty levels)

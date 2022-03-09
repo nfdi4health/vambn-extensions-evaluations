@@ -37,13 +37,14 @@ for (datan in names(data_all)){ # for every variable group
   ###################### AUX variables
   
   # make AUX columns and save in separate list (with SUBJID)
+  # AUX if A) stalone missing, or B) all/any entries of a vargroup are missing: which one?
   nms<-colnames(data)
   if (grepl('stalone', datan)){
-    dataux<-as.data.frame(sapply(as.data.frame(is.na(data)), as.numeric))
+    dataux<-as.data.frame(sapply(as.data.frame(is.na(data)), as.numeric)) #A
     dataux<-as.data.frame(sapply(dataux,factor))
     colnames(dataux)<-paste('AUX',nms,sep='_')
   }else{
-    dataux<-data.frame(factor(apply(data,1,function(x) as.numeric(all(is.na(x))))))
+    dataux<-data.frame(factor(apply(data,1,function(x) as.numeric(any(is.na(x)))))) #B: all( or any(is.na(x)) ?
     colnames(dataux)<-paste('AUX',datan,sep='_')
   }
   
