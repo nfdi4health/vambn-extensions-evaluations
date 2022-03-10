@@ -44,7 +44,7 @@ def set_settings(opts, nepochs=500, modload=False,
     return settings
 
 
-sample_size = 12
+sample_size = 120
 # get file list
 files = [i for i in os.listdir('data_python/') if not '_type' in i and not '_missing' in i]
 # sds = [1]*6

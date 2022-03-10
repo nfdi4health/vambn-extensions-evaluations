@@ -1,5 +1,5 @@
 ######### Add small amount of noise to AUX=1 data (constant otherwise)
-addnoise<- function(dat,noise){
+addnoise_fruit<- function(dat,noise){
   rm=c()
   for (col in colnames(dat)){
     if(!is.factor(dat[,col]) & (any(sapply(colnames(dat),function(x) paste0('AUX_',gsub('zcode_|scode_','',col))==x)))){

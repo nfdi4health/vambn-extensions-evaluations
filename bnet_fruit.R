@@ -19,7 +19,7 @@ source('helper/simulate_VP.R')
 source('helper/save_VPmisslist.R')
 # study specific helpers
 source('helper/merge_data_fruit.R')
-source('helper/addnoise.R')
+source('helper/addnoise_fruit.R')
 source('helper/add_visitmiss_fruit.R')
 source('helper/make_bl_wl_fruit.R')
 
@@ -42,7 +42,7 @@ pt<-data$SUBJID
 data$SUBJID<-NULL
 
 # add noise to the imputed/constant levels of continuous variables, prevents error in the BN due to singular data
-discdata<-addnoise(data,0.01)
+discdata<-addnoise_fruit(data,0.01)
 
 # Add parents for AUX variables
 # This node represents whether a whole visit is missing for a participant

@@ -22,3 +22,4 @@ To run, execute the following files, where ??? is your dataset.`fruit` is being 
 - `clean_format_???.R`
 - `impute_aux_???.R`
 - `HI-VAE/1_???_HIVAE_training.py` (make sure to set sample_size)
+- `bnet_fruit.R`
