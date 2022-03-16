@@ -116,3 +116,5 @@ save_VPmisslist(virtual,'HI-VAE/') #originally data/HI-VAE/
 ############################ plot graphs in cytoscape (careful about dashed line maps!)
 ############################
 # source('network_plot_paper.R')
+
+print('BNet finished')
