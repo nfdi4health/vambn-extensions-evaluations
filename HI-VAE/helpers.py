@@ -132,6 +132,7 @@ def train_network(settings):
         plt.ylabel('Reconstruction loss')  # we already handled the x-label with ax1
         plt.title(args.save_file)
         plt.savefig('Saved_Networks/train_stats/'+args.save_file+'.png', bbox_inches='tight')
+        return loss_epoch[-1]
     
 def enc_network(settings):
     'get s and z samples as embeddings as well as the original dataframe (with relevelled factors & NA\'s=0!)'
