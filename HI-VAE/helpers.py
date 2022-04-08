@@ -10,6 +10,8 @@ from matplotlib import pyplot as plt
 import time
 import re
 
+tf.logging.set_verbosity(tf.logging.ERROR)
+
 def merge_dat(lis):
     'merge all dataframes in a list on SUBJID'
     df = lis[0]

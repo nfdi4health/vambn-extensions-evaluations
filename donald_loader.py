@@ -1,5 +1,7 @@
 import pandas as pd
 
+### reads donald data, transforms it into vambn data format (one participant per row, multiple visits per row)
+
 df = #pd.read_sas('path/to/donald/data.sas7bdat')
 
 rows_by_pers = dict()
@@ -8,8 +10,17 @@ for i, row in df.iterrows():
         rows_by_pers[row.pers_ID] = []
     rows_by_pers[row.pers_ID].append(row)
 
+visit_dist = pd.Series([len(rows_by_pers[x]) for x in rows_by_pers]).value_counts().sort_index()
+print('visit counts across all participants:\n', visit_dist)
+
 all_pers = []
 for p_id, p_rows in rows_by_pers.items():
+    ### uncomment to remove participants with too many missed visits
+    # miss_ratio = 1.0 - len(p_rows)/16.0
+    # if miss_ratio > 0.2:
+    #     print('skipping', p_id, 'because', miss_ratio, 'of visits are missing (>=20%)')
+    #     continue
+
     ### FOR NOW:
     ages_rounded = [round(r.alter) for r in p_rows] #dataset min:3, max:18
     if len(set(ages_rounded)) != len(ages_rounded):
