@@ -27,14 +27,14 @@ make_bl_wl_donald<-function(data,blname,wlname,out=F,orphans){
   
   # blacklist (some of these deliberately overridden by whitelist settings)
   #  - duplicate connections #  - those back in time
-  #  - those to age or gender #  - all to and from AUX
+  #  - those to family or gender #  - all to and from AUX
   #  - all from visitmiss, all to visitmiss if same visit
   bl<-subset(combs, fromn>ton | to=='SA_fam_ID_VIS00' | to=='SA_sex_VIS00' | aux==1 | vismisfrom==1 |(vismisto==1 & fromn==ton))
   bl<-rbind(bl,combs[grepl('scode_',combs$from),])
   
   # whitelist
   #  - aux to matching normal column #  - aux to future aux
-  #  - parent missing visit to aux #  - TRT to UPDRS2 and 3 VIS 15
+  #  - parent missing visit to aux
   auxtonode<-subset(combs,auxfrom==1 | (auxfrom==1 & auxto==1 & ton-1==fromn))
   auxtonode<-auxtonode[gsub('zcode_|scode_','',auxtonode$to)==gsub('AUX_','',auxtonode$from),]
   auxtoaux<-subset(combs,(auxfrom==1 & auxto==1 & ton-1==fromn))
@@ -53,8 +53,10 @@ make_bl_wl_donald<-function(data,blname,wlname,out=F,orphans){
   # remove loop (shouldnt matter as bnlearn should do it automatically)
   bl<-bl[bl$from!=bl$to,]
   bl<-bl[!duplicated(bl), ]
+  bl<-bl[order(bl$from),]
   wl<-wl[wl$from!=wl$to,]
-  wl<-wl[!duplicated(wl), ]
+  wl<-wl[!duplicated(wl),]
+  wl<-wl[order(wl$from),]
   
   if (out){
     list(bll=bl[,c('from','to')],whl=wl[,c('from','to')])

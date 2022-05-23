@@ -54,11 +54,13 @@ rm<-out[['rm']]
 discdata<-discdata[ , !(names(discdata) %in% rm)]
 # remove AUX that are almost identical to visitmiss nodes
 lowaux<-discdata[,grepl('AUX_',colnames(discdata))&!(colnames(discdata) %in% rm)]
-#this tmp_thing is <2-dimensional if there weren't at least 2 working dX-vars in add_visitmiss, and breaks everything
-# tmp_thing<-sapply(colnames(lowaux),function(x) sum(as.numeric(as.character(lowaux[,x])))<=5) #only if 5 vars, ignore this because tiny data
-tmp_thing<-sapply(colnames(lowaux),function(x) sum(as.numeric(as.character(lowaux[,x])))<=1)
-lowaux<-colnames(lowaux)[tmp_thing]
-discdata<-discdata[ , !(names(discdata) %in% lowaux)]
+#this tmp is <2-dimensional if there weren't at least 2 working dX-vars in add_visitmiss, and breaks everything
+if (dim(lowaux)[2] > 0){
+  # tmp<-sapply(colnames(lowaux),function(x) sum(as.numeric(as.character(lowaux[,x])))<=5) #only if 5 vars, ignore this because tiny data
+  tmp<-sapply(colnames(lowaux),function(x) sum(as.numeric(as.character(lowaux[,x])))<=1)
+  lowaux<-colnames(lowaux)[tmp]
+  discdata<-discdata[ , !(names(discdata) %in% lowaux)]
+}
 orphans<-gsub('AUX_','',rm)
 orphans<-unname(sapply(orphans,function(x) ifelse(!grepl('SA_',x),paste0('zcode_',x),x)))
 
@@ -67,6 +69,9 @@ orphans<-unname(sapply(orphans,function(x) ifelse(!grepl('SA_',x),paste0('zcode_
 ############################
 
 # Make bl/wl
+datan<-names(discdata)
+write.csv(datan,'data/data_out/data_names.csv',row.names = F)
+#stop()
 blname<-paste0(data_out,'_bl.csv')
 wlname<-paste0(data_out,'_wl.csv')
 #make_bl_wl_donald(discdata,blname,wlname,F,orphans) # rm has info about "orphaned" nodes (need to be connected to visitmiss, not to AUX)
@@ -85,12 +90,14 @@ cl =  makeCluster(cores)
 boot.stren = boot.strength(discdata, algorithm="tabu", R=1000, algorithm.args = list(maxp=5, blacklist=bl, whitelist=wl, score=scr), cluster=cl)
 stopCluster(cl)
 saveRDS(boot.stren,paste0(data_out,'_bootBN.rds'))
+print('BOOT DONE')
 
 # save fitted network
 real = discdata
 finalBN<-readRDS(paste0(data_out,'_finalBN.rds'))
 fitted = bn.fit(finalBN, real, method=mth)
 saveRDS(fitted,paste0(data_out,'_finalBN_fitted.rds'))
+print('FIT DONE')
 
 ############################
 ############################ VP vs RP

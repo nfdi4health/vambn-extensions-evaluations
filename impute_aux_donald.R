@@ -36,7 +36,7 @@ for (datan in names(data_all)){ # for every variable group
     dataux<-as.data.frame(sapply(dataux,factor))
     colnames(dataux)<-paste('AUX',nms,sep='_')
   }else{
-    dataux<-data.frame(factor(apply(data,1,function(x) as.numeric(any(is.na(x)))))) #B: all( or any(is.na(x)) ?
+    dataux<-data.frame(factor(apply(data,1,function(x) as.numeric(all(is.na(x)))))) #B: all( or any(is.na(x)) ?
     colnames(dataux)<-paste('AUX',datan,sep='_')
   }
   

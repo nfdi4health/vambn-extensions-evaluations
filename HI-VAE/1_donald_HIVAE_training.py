@@ -133,7 +133,7 @@ for ax in fig.ravel():
 
 plt.suptitle('HI-VAE embeddings (deterministic)', fontsize=20)
 
-plt.savefig('SPLOM_'+datetime.now().strftime('%d_%b_%H-%M-%S'))
+plt.savefig('SPLOM_'+datetime.now().strftime('%b_%d_%H-%M-%S'))
 
 
 #### Reconstructed data

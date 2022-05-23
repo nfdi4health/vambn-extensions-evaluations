@@ -17,7 +17,7 @@ for _, row in df_vambn.iterrows():
             this_person[vis][var] = val
     separate_visits[row['SUBJID']] = this_person
 
-df_donald = pd.DataFrame(columns=separate_visits[19.0][0].keys())
+df_donald = pd.DataFrame(columns=separate_visits[27.0][0].keys())
 for pers_ID, pers_dict in separate_visits.items():
     for vis, vis_data in pers_dict.items():
         df_donald = df_donald.append(pd.Series(vis_data), ignore_index=True)

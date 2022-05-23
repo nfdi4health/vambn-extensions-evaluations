@@ -282,3 +282,26 @@ def error_computation(x_train, x_hat, types_dict, miss_mask):
         ind_ini = ind_end
                 
     return error_observed, error_missing
+
+
+"""
+Creates a random permutation of the indexes in range(len(miss_list)), meant to be used for splitting data into minibatches.
+However, it makes sure that nonmissing values are evenly distributed across all the batches.
+This prevents batches with 100% missing values, which would lead to NaN loss.
+author: jschneider
+"""
+def stratified_permutation(miss_list, batch_size, n_batches):
+    # get indexes of missing/observed values
+    m_idx = np.random.permutation(np.argwhere(miss_list[:, 0] == 0.0)) #0.0 indicates missingness?
+    o_idx = np.random.permutation(np.argwhere(miss_list[:, 0] == 1.0))
+    assert len(o_idx) > n_batches, 'There are less observed values than minibatches'
+
+    stratified_idx = np.empty(shape=(0, 0), dtype='int64')
+    for o_part in np.array_split(o_idx, n_batches): #split available observed values evenly into batches
+        add_n = batch_size - len(o_part) #this many missing values need to be added to reach batch size
+        batch = np.random.permutation(np.append(o_part, m_idx[:add_n]))
+        m_idx = m_idx[add_n:]
+        stratified_idx = np.append(stratified_idx, batch)
+
+    # np.append(stratified_idx, m_idx) #use this in case len(stratified_idx) needs to be increased from batch_size*n_batch to sample_size
+    return stratified_idx

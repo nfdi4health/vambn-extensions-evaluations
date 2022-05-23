@@ -52,7 +52,7 @@ add_visitmiss_donald<-function(discdata){
   rm13<-rownames(d13)[duplicated(d13, fromLast=TRUE)]
   rm14<-rownames(d14)[duplicated(d14, fromLast=TRUE)]
   rm15<-rownames(d15)[duplicated(d15, fromLast=TRUE)]
-  rm<-c(rm00,rm01,rm02,rm04,rm05,rm06,rm07,rm08,rm09,rm10,rm11,rm12,rm13,rm14,rm15) # orphaned nodes are those whose immediate parent AUX is identical to the visitmiss at that visit
+  rm<-c(rm00,rm01,rm02,rm03,rm04,rm05,rm06,rm07,rm08,rm09,rm10,rm11,rm12,rm13,rm14,rm15) # orphaned nodes are those whose immediate parent AUX is identical to the visitmiss at that visit
   return(list(data=discdata,rm=rm))
   
 }

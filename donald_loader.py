@@ -48,6 +48,10 @@ for vis in range(16):
        'm_schulab', 'wo_tage']]
 df_vambn = df_vambn.reindex(columns=cols)
 df_vambn.rename(columns={'pers_ID': 'SUBJID'}, inplace=True) #rename pers_ID to SUBJID
+
+participant_dist = pd.Series([df_vambn['alter_VIS'+str(bla).zfill(2)].count() for bla in range(16)])
+print('participant counts for the 16 visits:\n', participant_dist)
+
 df_vambn.to_csv('data/donald-data.csv')
 
 print('fin')

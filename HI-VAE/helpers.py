@@ -203,9 +203,8 @@ def enc_network(settings):
             feedDict[tf_nodes['scodes']] = np.ones(args.batch_size).reshape((args.batch_size,1))
 
             #Get samples from the model
-            KL_s,loss,samples,log_p_x,log_p_x_missing,loss_total,KL_z,p_params,q_params,loss_reg  = session.run([tf_nodes['KL_s'], tf_nodes['loss_re'],tf_nodes['samples'],
-                                                    tf_nodes['log_p_x'],
-                                                     tf_nodes['log_p_x_missing'],tf_nodes['loss'],
+            KL_s,loss,samples,log_p_x,log_p_x_missing,loss_total,KL_z,p_params,q_params,loss_reg  = session.run([tf_nodes['KL_s'], tf_nodes['loss_re'],
+                                                     tf_nodes['samples'],tf_nodes['log_p_x'], tf_nodes['log_p_x_missing'],tf_nodes['loss'],
                                                      tf_nodes['KL_z'],tf_nodes['p_params'],tf_nodes['q_params'],tf_nodes['loss_reg']],
                                                      feed_dict=feedDict)
 
