@@ -83,7 +83,7 @@ def train_network(settings):
             print(tau)
 
             #Randomize the data in the mini-batches
-            random_perm = np.random.permutation(range(np.shape(train_data)[0]))
+            random_perm = read_functions.stratified_permutation(miss_mask, args.batch_size, n_batches)
             train_data_aux = train_data[random_perm,:]
             miss_mask_aux = miss_mask[random_perm,:]
             true_miss_mask_aux = true_miss_mask[random_perm,:]
