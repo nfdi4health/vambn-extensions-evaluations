@@ -8,10 +8,11 @@ Created on Mon Apr 16 10:59:14 2018
 
 import csv
 import tensorflow as tf
+from keras.layers import *
 import loglik_models_missing_normalize
 import numpy as np
 
-def place_holder_types(types_file, batch_size):
+def place_holder_types(types_file, batch_size, n_vis):
     
     #Read the types of the data from the files
     with open(types_file) as f:
@@ -22,18 +23,18 @@ def place_holder_types(types_file, batch_size):
     #Create placeholders for every data type, with appropriate dimensions
     batch_data_list = []
     for i in range(len(types_list)):
-        batch_data_list.append(tf.placeholder(tf.float32, shape=(batch_size,types_list[i]['dim'])))
-    tf.concat(batch_data_list, axis=1)
+        batch_data_list.append(tf.placeholder(tf.float32, shape=(batch_size, n_vis, types_list[i]['dim'])))
+    tf.concat(batch_data_list, axis=2) #result not used
     
     #Create placeholders for every missing data type, with appropriate dimensions
     batch_data_list_observed = []
     for i in range(len(types_list)):
-        batch_data_list_observed.append(tf.placeholder(tf.float32, shape=(batch_size,types_list[i]['dim'])))
-    tf.concat(batch_data_list_observed, axis=1)
+        batch_data_list_observed.append(tf.placeholder(tf.float32, shape=(batch_size, n_vis, types_list[i]['dim'])))
+    tf.concat(batch_data_list_observed, axis=2)
         
     #Create placeholders for the missing data indicator variable
-    miss_list = tf.placeholder(tf.int32, shape=(batch_size,len(types_list)))
-    miss_list_VP = tf.placeholder(tf.int32, shape=(batch_size,len(types_list)))
+    miss_list = tf.placeholder(tf.int32, shape=(batch_size, n_vis, len(types_list)))
+    miss_list_VP = tf.placeholder(tf.int32, shape=(batch_size, n_vis, len(types_list)))
     
     #Placeholder for Gumbel-softmax parameter
     tau = tf.placeholder(tf.float32,shape=())
@@ -49,17 +50,20 @@ def batch_normalization(batch_data_list, types_list, miss_list):
     normalization_parameters = []
     
     for i,d in enumerate(batch_data_list):
+        d_flat = tf.reshape(d, [tf.shape(d)[0]*tf.shape(d)[1], tf.shape(d)[2]])
+        m = miss_list[:,:,i]
+        m_flat = tf.reshape(m, [tf.shape(m)[0]*tf.shape(m)[1]])
         #Partition the data in missing data (0) and observed data n(1)
-        missing_data, observed_data = tf.dynamic_partition(d, miss_list[:,i], num_partitions=2)
-        condition_indices = tf.dynamic_partition(tf.range(tf.shape(d)[0]), miss_list[:,i], num_partitions=2)
+        missing_data, observed_data = tf.dynamic_partition(d_flat, m_flat, num_partitions=2)
+        condition_indices = tf.dynamic_partition(tf.range(tf.shape(d_flat)[0]), m_flat, num_partitions=2)
         
         if types_list[i]['type'] == 'real':
             #We transform the data to a gaussian with mean 0 and std 1
             data_mean, data_var = tf.nn.moments(observed_data,0)
             data_var = tf.clip_by_value(data_var,1e-6,1e20) #Avoid zero values
             aux_X = tf.nn.batch_normalization(observed_data,data_mean,data_var,offset=0.0,scale=1.0,variance_epsilon=1e-6)
-            
-            normalized_data.append(tf.dynamic_stitch(condition_indices, [missing_data, aux_X]))
+
+            normalized_data.append(tf.reshape(tf.dynamic_stitch(condition_indices, [missing_data, aux_X]), [tf.shape(d)[0], tf.shape(d)[1], tf.shape(d)[2]]))
             normalization_parameters.append([data_mean, data_var])
             
         #When using log-normal
@@ -69,16 +73,16 @@ def batch_normalization(batch_data_list, types_list, miss_list):
             data_mean_log, data_var_log = tf.nn.moments(observed_data_log,0)
             data_var_log = tf.clip_by_value(data_var_log,1e-6,1e20) #Avoid zero values
             aux_X = tf.nn.batch_normalization(observed_data_log,data_mean_log,data_var_log,offset=0.0,scale=1.0,variance_epsilon=1e-6)
-            
-            normalized_data.append(tf.dynamic_stitch(condition_indices, [missing_data, aux_X]))
+
+            normalized_data.append(tf.reshape(tf.dynamic_stitch(condition_indices, [missing_data, aux_X]), [tf.shape(d)[0], tf.shape(d)[1], tf.shape(d)[2]]))
             normalization_parameters.append([data_mean_log, data_var_log])
             
         elif types_list[i]['type'] == 'count':
             
             #Input log of the data
             aux_X = tf.log(observed_data)
-            
-            normalized_data.append(tf.dynamic_stitch(condition_indices, [missing_data, aux_X]))
+
+            normalized_data.append(tf.reshape(tf.dynamic_stitch(condition_indices, [missing_data, aux_X]), [tf.shape(d)[0], tf.shape(d)[1], tf.shape(d)[2]]))
             normalization_parameters.append([0.0, 1.0])
             
             
@@ -87,13 +91,13 @@ def batch_normalization(batch_data_list, types_list, miss_list):
             normalized_data.append(d)
             normalization_parameters.append([0.0, 1.0]) #No normalization here
     
-    return normalized_data, normalization_parameters
+    return normalized_data, normalization_parameters #do these norm_params still make sense for input shape [n_batch,n_vis,type_dim] instead of [n_batch,type_dim]?
 
 def s_proposal_multinomial(X, batch_size, s_dim, tau, reuse):
     
     #We propose a categorical distribution to create a GMM for the latent space z
-    log_pi = tf.layers.dense(inputs=X, units=s_dim, activation=None,
-                         kernel_initializer=tf.random_normal_initializer(stddev=0.05), name='layer_1_' + 'enc_s', reuse=reuse)
+    log_pi = Dense(units=s_dim, activation=None,
+                         kernel_initializer=tf.random_normal_initializer(stddev=0.05), name='layer_1_' + 'enc_s')(X) #reuse?
     
     #Gumbel-softmax trick
     U = -tf.log(-tf.log(tf.random_uniform([batch_size,s_dim])))
@@ -104,10 +108,10 @@ def s_proposal_multinomial(X, batch_size, s_dim, tau, reuse):
 def z_proposal_GMM(X, samples_s, batch_size, z_dim, reuse):
     
     #We propose a GMM for z
-    mean_qz = tf.layers.dense(inputs=tf.concat([X,samples_s],1), units=z_dim, activation=None,
-                         kernel_initializer=tf.random_normal_initializer(stddev=0.05), name='layer_1_' + 'mean_enc_z', reuse=reuse)
-    log_var_qz = tf.layers.dense(inputs=tf.concat([X,samples_s],1), units=z_dim, activation=None,
-                         kernel_initializer=tf.random_normal_initializer(stddev=0.05), name='layer_1_' + 'logvar_enc_z', reuse=reuse)
+    mean_qz = Dense(units=z_dim, activation=None,
+                         kernel_initializer=tf.random_normal_initializer(stddev=0.05), name='layer_1_' + 'mean_enc_z')(tf.concat([X,samples_s],1)) #reuse?
+    log_var_qz = Dense(units=z_dim, activation=None,
+                         kernel_initializer=tf.random_normal_initializer(stddev=0.05), name='layer_1_' + 'logvar_enc_z')(tf.concat([X,samples_s],1)) #reuse?
     
     # Avoid numerical problems
     log_var_qz = tf.clip_by_value(log_var_qz,-15.0,15.0)
@@ -120,8 +124,8 @@ def z_proposal_GMM(X, samples_s, batch_size, z_dim, reuse):
 def z_distribution_GMM(samples_s, z_dim, reuse):
     
     #We propose a GMM for z
-    mean_pz = tf.layers.dense(inputs=samples_s, units=z_dim, activation=None,
-                         kernel_initializer=tf.random_normal_initializer(stddev=0.05), name= 'layer_1_' + 'mean_dec_z', reuse=reuse)
+    mean_pz = Dense(units=z_dim, activation=None,
+                         kernel_initializer=tf.random_normal_initializer(stddev=0.05), name= 'layer_1_' + 'mean_dec_z')(samples_s) #reuse?
     log_var_pz = tf.zeros([tf.shape(samples_s)[0],z_dim])
     
     # Avoid numerical problems

@@ -30,6 +30,7 @@ def train_network(settings):
     argvals = settings.split()
     args = parser_arguments.getArgs(argvals)
     print(args)
+    n_vis = 16
 
     #Create a directoy for the save file
     if not os.path.exists('./Saved_Networks/' + args.save_file):
@@ -42,11 +43,11 @@ def train_network(settings):
     sess_HVAE = tf.Graph()
 
     with sess_HVAE.as_default():
-        tf_nodes = graph_new.HVAE_graph(args.model_name, args.types_file, args.batch_size,
-                                    learning_rate=args.learning_rate, z_dim=args.dim_latent_z, y_dim=args.dim_latent_y, s_dim=args.dim_latent_s, y_dim_partition=args.dim_latent_y_partition)
+        tf_nodes = graph_new.HVAE_graph(args.model_name, args.types_file, args.batch_size, n_vis, learning_rate=args.learning_rate, z_dim=args.dim_latent_z,
+                                        y_dim=args.dim_latent_y, s_dim=args.dim_latent_s, y_dim_partition=args.dim_latent_y_partition)
 
     ################### Running the VAE Training #################################
-    train_data, types_dict, miss_mask, true_miss_mask, n_samples = read_functions.read_data(args.data_file, args.types_file, args.miss_file, args.true_miss_file)
+    train_data, types_dict, miss_mask, true_miss_mask, n_samples = read_functions.read_data(args.data_file, args.types_file, args.miss_file, args.true_miss_file, n_vis)
     n_batches = int(np.floor(np.shape(train_data)[0]/args.batch_size))#Get an integer number of batches
     miss_mask = np.multiply(miss_mask, true_miss_mask)#Compute the real miss_mask
 
@@ -90,10 +91,10 @@ def train_network(settings):
 
             for i in range(n_batches):
                 data_list, miss_list = read_functions.next_batch(train_data_aux, types_dict, miss_mask_aux, args.batch_size, index_batch=i) #Create inputs for the feed_dict
-                data_list_observed = [data_list[i]*np.reshape(miss_list[:,i],[args.batch_size,1]) for i in range(len(data_list))] #Delete not known data (input zeros)
+                data_list_observed = [data_list[i]*np.reshape(miss_list[:,:,i],[args.batch_size,n_vis,1]) for i in range(len(data_list))] #Delete not known data (input zeros)
 
                 #Create feed dictionary
-                feedDict = {i: d for i, d in zip(tf_nodes['ground_batch'], data_list)}
+                feedDict = {i: d for i, d in zip(tf_nodes['ground_batch'], data_list)} #for each variable in vargroup
                 feedDict.update({i: d for i, d in zip(tf_nodes['ground_batch_observed'], data_list_observed)})
                 feedDict[tf_nodes['miss_list']] = miss_list 
                 feedDict[tf_nodes['miss_list_VP']] = np.ones(miss_list.shape) # only works when running all 1 batch 1 epoch

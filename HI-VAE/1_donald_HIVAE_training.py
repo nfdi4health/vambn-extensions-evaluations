@@ -17,7 +17,7 @@ import helpers  # this is where the main training/decoding functions are, modifi
 def set_settings(opts, nepochs=500, modload=False,
                  save=True):  # note: modload doesnt do anything right now, hardcoded in helpers.py
     'replace setting template placeholders with file info'
-    inputf = re.sub('.csv', '', opts['files'].iloc[0])
+    inputf = opts['vargroups'].iloc[0]+'_VIS00'
     missf = inputf + '_missing.csv'
     typef = inputf + '_types.csv'
 
@@ -50,6 +50,7 @@ print('t =', '{:10.4f}'.format(0), 'Begin processing inputs')
 sample_size = 1274
 # get file list
 files = [i for i in os.listdir('data_python/') if not '_type' in i and not '_missing' in i]
+vargroups = set([i.split('_')[0] for i in files])
 # sds = [1]*6
 # sdims = dict(zip(files, sds))
 best_hyper = pd.read_csv('donald-results.csv')
@@ -67,15 +68,18 @@ for cf in [i for i in os.listdir('python_names/') if '_cols' in i]:
             writer.writerow(types_dict[row['x']])
 
 print('t =', '{:10.4f}'.format(time.process_time()-t), 'Begin training all vargroups')
-for x, f in enumerate(files):
-    opts = dict(best_hyper[best_hyper['files'].copy() == f])
+for x, vg in enumerate(vargroups):
+    dataf0 = vg+'_VIS00.csv'
+    missf0 = vg+'_VIS00_missing.csv'
+    typef0 = vg+'_VIS00_types.csv'
+    opts = dict(best_hyper[best_hyper['vargroups'].copy() == vg])
     settings = set_settings(opts, modload=False, save=True)
     last_loss = helpers.train_network(settings)
-    print(x+1, '/', len(files), ': trained file with final loss of', last_loss)
+    print(x+1, '/', len(files), ': trained vargroup', vg, 'with final loss of', last_loss)
     c = 0
     while np.isnan(last_loss):
         if c > 9:
-            print('GAVE UP on file after not converging 10 times!')
+            print('GAVE UP on vargroup after not converging 10 times!')
             continue
         last_loss = helpers.train_network(settings)
         c += 1

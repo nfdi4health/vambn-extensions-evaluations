@@ -12,19 +12,27 @@ Created on Tue Jan 23 16:23:35 2018
 # hidden_dim is the number of neurons of the first hidden layer
 
 import tensorflow as tf
+from keras.layers import *
 import VAE_functions
-        
-def encoder(X_list, miss_list, batch_size, z_dim, s_dim, tau):
+
+def lstm_in(X_list, n_units):
+    lstm_layer = LSTM(units=n_units, kernel_initializer=tf.random_normal_initializer(stddev=0.05), name='lstm_in')
+
+    X = tf.concat(X_list,2)
+    h_end = lstm_layer(X)
+    return h_end
+
+
+def encoder(h_end, miss_list, batch_size, z_dim, s_dim, tau):
     
     samples = dict.fromkeys(['s','z','y','x'],[])
     q_params = dict()
-    X = tf.concat(X_list,1)
     
     #Create the proposal of q(s|x^o)
-    samples['s'], q_params['s'] = VAE_functions.s_proposal_multinomial(X, batch_size, s_dim, tau, reuse=None)
+    samples['s'], q_params['s'] = VAE_functions.s_proposal_multinomial(h_end, batch_size, s_dim, tau, reuse=None)
     
     #Create the proposal of q(z|s,x^o)
-    samples['z'], q_params['z'] = VAE_functions.z_proposal_GMM(X, samples['s'], batch_size, z_dim, reuse=None)
+    samples['z'], q_params['z'] = VAE_functions.z_proposal_GMM(h_end, samples['s'], batch_size, z_dim, reuse=None)
     
     return samples, q_params
         

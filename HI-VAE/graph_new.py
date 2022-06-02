@@ -12,7 +12,7 @@ import tensorflow as tf
 import numpy as np
 import VAE_functions
 
-def HVAE_graph(model_name, types_file, batch_size, learning_rate=1e-3, z_dim=2, y_dim=1, s_dim=2, y_dim_partition=[]):
+def HVAE_graph(model_name, types_file, batch_size, n_vis, learning_rate=1e-3, z_dim=2, y_dim=1, s_dim=2, y_dim_partition=[]):
     
     #We select the model for the VAE
     print('[*] Importing model: ' + model_name)
@@ -20,7 +20,7 @@ def HVAE_graph(model_name, types_file, batch_size, learning_rate=1e-3, z_dim=2, 
     
     #Load placeholders
     print('[*] Defining placeholders')
-    batch_data_list, batch_data_list_observed, miss_list, miss_list_VP, tau, types_list,zcodes,scodes = VAE_functions.place_holder_types(types_file, batch_size)
+    batch_data_list, batch_data_list_observed, miss_list, miss_list_VP, tau, types_list,zcodes,scodes = VAE_functions.place_holder_types(types_file, batch_size, n_vis)
     
     #Batch normalization of the data
     X_list, normalization_params = VAE_functions.batch_normalization(batch_data_list_observed, types_list, miss_list)
@@ -31,10 +31,12 @@ def HVAE_graph(model_name, types_file, batch_size, learning_rate=1e-3, z_dim=2, 
     else:
         y_dim_partition = y_dim*np.ones(len(types_list),dtype=int)
         y_dim_output = np.sum(y_dim_partition)
-    
-    #Encoder definition
+
+    print('[*] Defining LSTM_In...')
+    h_end = model.lstm_in(X_list, n_units=20)
+
     print('[*] Defining Encoder...')
-    samples, q_params = model.encoder(X_list, miss_list, batch_size, z_dim, s_dim, tau)
+    samples, q_params = model.encoder(h_end, miss_list, batch_size, z_dim, s_dim, tau)
     
     print('[*] Defining Decoder...')
     theta, samples, p_params, log_p_x, log_p_x_missing = model.decoder(batch_data_list, miss_list, types_list, samples, q_params, normalization_params, batch_size, z_dim, y_dim_output, y_dim_partition)
