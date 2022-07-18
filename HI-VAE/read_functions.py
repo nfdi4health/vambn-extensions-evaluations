@@ -141,36 +141,43 @@ def next_batch(data, types_dict, miss_mask, batch_size, index_batch):
     return data_list, miss_list
 
 def samples_concatenation(samples):
-    
+
+    batches_samples_x = []
     for i,batch in enumerate(samples):
+        vis_samples_x = []
+        for v, vis_x in enumerate(batch['x']):
+            vis_samples_x.append(np.concatenate(vis_x,1))
+        batches_samples_x.append(vis_samples_x)
         if i == 0:
-            samples_x = np.concatenate(batch['x'],1)
             samples_y = batch['y']
             samples_z = batch['z']
             samples_s = batch['s']
         else:
-            samples_x = np.concatenate([samples_x,np.concatenate(batch['x'],1)],0)
             samples_y = np.concatenate([samples_y,batch['y']],0)
             samples_z = np.concatenate([samples_z,batch['z']],0)
             samples_s = np.concatenate([samples_s,batch['s']],0)
-        
-    return samples_s, samples_z, samples_y, samples_x
+    x_arr = list(np.swapaxes(np.array(batches_samples_x), 1, 2)) #nbatch*[batchsize,nvis,coldim]
+    return samples_s, samples_z, samples_y, np.concatenate(x_arr, 0)
 
 def discrete_variables_transformation(data, types_dict):
-    
-    ind_ini = 0
+
     output = []
-    for d in range(len(types_dict)):
-        ind_end = ind_ini + int(types_dict[d]['dim'])
-        if types_dict[d]['type'] == 'cat':
-            output.append(np.reshape(np.argmax(data[:,ind_ini:ind_end],1),[-1,1]))
-        elif types_dict[d]['type'] == 'ordinal':
-            output.append(np.reshape(np.sum(data[:,ind_ini:ind_end],1) - 1,[-1,1]))
-        else:
-            output.append(data[:,ind_ini:ind_end])
-        ind_ini = ind_end
+    for v in range(data.shape[1]):
+        vis_data = data[:,v,:]
+        ind_ini = 0
+        vis_output = []
+        for d in range(len(types_dict)):
+            ind_end = ind_ini + int(types_dict[d]['dim'])
+            if types_dict[d]['type'] == 'cat':
+                vis_output.append(np.reshape(np.argmax(vis_data[:,ind_ini:ind_end],1),[-1,1]))
+            elif types_dict[d]['type'] == 'ordinal':
+                vis_output.append(np.reshape(np.sum(vis_data[:,ind_ini:ind_end],1) - 1,[-1,1]))
+            else:
+                vis_output.append(vis_data[:,ind_ini:ind_end])
+            ind_ini = ind_end
+        output.append(np.concatenate(vis_output,1))
     
-    return np.concatenate(output,1)
+    return np.stack(output,1)
 
 #Several baselines
 def mean_imputation(train_data, miss_mask, types_dict):
@@ -314,8 +321,8 @@ author: jschneider
 """
 def stratified_permutation(miss_list, batch_size, n_batches):
     # get indexes of missing/observed values
-    m_idx = np.random.permutation(np.argwhere(miss_list[:, 0] == 0.0)) #0.0 indicates missingness?
-    o_idx = np.random.permutation(np.argwhere(miss_list[:, 0] == 1.0))
+    m_idx = np.random.permutation(np.argwhere(miss_list[:,0,0] == 0.0)) #0.0 indicates missingness
+    o_idx = np.random.permutation(np.argwhere(miss_list[:,0,0] == 1.0))
     assert len(o_idx) > n_batches, 'There are less observed values than minibatches'
 
     stratified_idx = np.empty(shape=(0, 0), dtype='int64')

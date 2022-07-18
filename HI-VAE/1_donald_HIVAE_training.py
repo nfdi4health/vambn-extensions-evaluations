@@ -69,13 +69,10 @@ for cf in [i for i in os.listdir('python_names/') if '_cols' in i]:
 
 print('t =', '{:10.4f}'.format(time.process_time()-t), 'Begin training all vargroups')
 for x, vg in enumerate(vargroups):
-    dataf0 = vg+'_VIS00.csv'
-    missf0 = vg+'_VIS00_missing.csv'
-    typef0 = vg+'_VIS00_types.csv'
     opts = dict(best_hyper[best_hyper['vargroups'].copy() == vg])
     settings = set_settings(opts, modload=False, save=True)
     last_loss = helpers.train_network(settings)
-    print(x+1, '/', len(files), ': trained vargroup', vg, 'with final loss of', last_loss)
+    print(x+1, '/', len(vargroups), ': trained vargroup', vg, 'with final loss of', last_loss)
     c = 0
     while np.isnan(last_loss):
         if c > 9:
@@ -83,7 +80,7 @@ for x, vg in enumerate(vargroups):
             continue
         last_loss = helpers.train_network(settings)
         c += 1
-        print('!!!', x+1, '/', len(files), ': reran training', c, 'times with final loss of', last_loss)
+        print('!!!', x+1, '/', len(vargroups), ': reran training', c, 'times with final loss of', last_loss)
 
 wave = np.sin(2*np.pi*400*np.arange(10000*2)/10000)
 Audio(wave, rate=10000, autoplay=True)
@@ -94,9 +91,9 @@ print('t =', '{:10.4f}'.format(time.process_time()-t), 'Begin getting embeddings
 
 dat = list()
 dfs = list()
-for x, f in enumerate(files):
+for x, vg in enumerate(vargroups):
     # replace placeholders in template
-    opts = dict(best_hyper[best_hyper['files'].copy() == f])
+    opts = dict(best_hyper[best_hyper['vargroups'].copy() == vg])
     opts['nbatch'].iloc[0] = sample_size
     settings = set_settings(opts, nepochs=1, modload=True, save=False)
 
@@ -104,19 +101,19 @@ for x, f in enumerate(files):
     encs, encz, d = helpers.enc_network(settings)
 
     # make deterministic embeddings
-    subj = pd.read_csv('python_names/' + re.sub('.csv', '', f) + '_subj.csv')['x']
-    sc = pd.DataFrame({'scode_' + re.sub('.csv', '', f): pd.Series(np.array([i for i in encs])), 'SUBJID': subj})
-    zc = pd.DataFrame({'zcode_' + re.sub('.csv', '', f): pd.Series(np.array([i[0] for i in encz])), 'SUBJID': subj})
+    subj = pd.read_csv('python_names/' + vg + '_VIS00_subj.csv')['x']
+    sc = pd.DataFrame({'scode_' + vg: pd.Series(np.array([i for i in encs])), 'SUBJID': subj})
+    zc = pd.DataFrame({'zcode_' + vg: pd.Series(np.array([i[0] for i in encz])), 'SUBJID': subj})
     enc = pd.merge(sc, zc, on='SUBJID')
 
     # save out individual file's metadata
-    enc.to_csv('Saved_Networks/' + re.sub('.csv', '', f) + '_meta.csv', index=False)
+    enc.to_csv('Saved_Networks/' + vg + '_meta.csv', index=False)
     dfs.append(enc)
     dat.append(d)
-    print(x+1, '/', len(files), ': got embeddings and saved metadata in Saved_Networks/')
+    print(x+1, '/', len(vargroups), ': got embeddings and saved metadata in Saved_Networks/')
 
 # join metadata
-enc_vars = [pd.read_csv('Saved_Networks/' + re.sub('.csv', '', f) + '_meta.csv') for f in files]
+enc_vars = [pd.read_csv('Saved_Networks/' + vg + '_meta.csv') for vg in vargroups]
 meta = helpers.merge_dat(enc_vars)
 meta[meta.columns[['Unnamed' not in i for i in meta.columns]]].to_csv('metaenc.csv', index=False)
 
@@ -147,25 +144,29 @@ meta = pd.read_csv('metaenc.csv')
 
 recon = list()
 recdfs = list()
-for x, f in enumerate(files):
+for x, vg in enumerate(vargroups):
     # replace placeholders in template
-    opts = dict(best_hyper[best_hyper['files'].copy() == f])
+    opts = dict(best_hyper[best_hyper['vargroups'].copy() == vg])
     opts['nbatch'].iloc[0] = sample_size
     settings = set_settings(opts, nepochs=1, modload=True, save=False)
 
     # run
-    zcodes = meta['zcode_' + re.sub('.csv', '', f)]
-    scodes = meta['scode_' + re.sub('.csv', '', f)]
+    zcodes = meta['zcode_' + vg]
+    scodes = meta['scode_' + vg]
     rec = helpers.dec_network(settings, zcodes, scodes)
-    recon.append(rec)
 
-    subj = pd.read_csv('python_names/' + re.sub('.csv', '', f) + '_subj.csv')['x']
-    names = pd.read_csv('python_names/' + re.sub('.csv', '', f) + '_cols.csv')['x']
-    recd = pd.DataFrame(rec)
-    recd.columns = names
-    recd['SUBJID'] = subj
-    recdfs.append(recd)
-    print(x+1, '/', len(files), ': finished reconstructing data')
+    for vis in range(rec.shape[1]):
+        rec_vis = rec[:,vis,:]
+        recon.append(rec_vis)
+
+        subj = pd.read_csv('python_names/' + vg + '_VIS' + str(vis).zfill(2) + '_subj.csv')['x']
+        names = pd.read_csv('python_names/' + vg + '_VIS'+ str(vis).zfill(2) + '_cols.csv')['x']
+
+        recd_vis = pd.DataFrame(rec_vis)
+        recd_vis.columns = names
+        recd_vis['SUBJID'] = subj
+        recdfs.append(recd_vis)
+    print(x+1, '/', len(vargroups), ': finished reconstructing data')
 
 recon_dic = dict(zip(files, recon))
 
@@ -178,24 +179,26 @@ print('t =', '{:10.4f}'.format(time.process_time()-t), 'Begin getting loglikelih
 meta = pd.read_csv('metaenc.csv')
 
 dfs = list()
-for x, f in enumerate(files):
+for x, vg in enumerate(vargroups):
     # replace placeholders in template
-    opts = dict(best_hyper[best_hyper['files'].copy() == f])
+    opts = dict(best_hyper[best_hyper['vargroups'].copy() == vg])
     opts['nbatch'].iloc[0] = sample_size
     settings = set_settings(opts, nepochs=1, modload=True, save=False)
 
     # run
-    zcodes = meta['zcode_' + re.sub('.csv', '', f)]
-    scodes = meta['scode_' + re.sub('.csv', '', f)]
+    zcodes = meta['zcode_' + vg]
+    scodes = meta['scode_' + vg]
 
-    loglik = helpers.dec_network_loglik(settings, zcodes, scodes)
-    loglik = np.nanmean(np.array(loglik).T, axis=1)
-    subj = pd.read_csv('python_names/' + re.sub('.csv', '', f) + '_subj.csv')['x']
-    dat = pd.DataFrame(loglik)
-    dat.columns = [f]
-    dat['SUBJID'] = subj
-    dfs.append(dat)
-    print(x+1, '/', len(files), ': finished getting loglik')
+    loglik_list = helpers.dec_network_loglik(settings, zcodes, scodes)
+
+    for vis, loglik_vis in enumerate(loglik_list):
+        loglik_vis = np.nanmean(np.array(loglik_vis).T, axis=1)
+        subj = pd.read_csv('python_names/' + vg + '_VIS' + str(vis).zfill(2) + '_subj.csv')['x']
+        dat = pd.DataFrame(loglik_vis)
+        dat.columns = [vg + '_VIS' + str(vis).zfill(2)]
+        dat['SUBJID'] = subj
+        dfs.append(dat)
+    print(x+1, '/', len(vargroups), ': finished getting loglik')
 
 decoded = helpers.merge_dat(dfs)
 decoded.to_csv('training_logliks.csv', index=False)
