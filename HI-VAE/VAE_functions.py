@@ -203,32 +203,32 @@ def theta_estimation_from_y(samples_y, types_list, miss_list, batch_size, reuse,
 def theta_real(observed_y, missing_y, condition_indices, types_list, nObs, batch_size, i, v, reuse, kr_layers):
     
     #Mean layer
-    h2_mean = observed_data_layer(observed_y, missing_y, condition_indices, output_dim=types_list[i]['dim'], name='layer_h2' + str(i) + str(v), reuse=reuse, kr_layers=kr_layers)
+    h2_mean = observed_data_layer(observed_y, missing_y, condition_indices, output_dim=types_list[i]['dim'], name='layer_h2' + str(i) + '_' + str(v), reuse=reuse, kr_layers=kr_layers)
     #Sigma Layer
-    h2_sigma = observed_data_layer(observed_y, missing_y, condition_indices, output_dim=types_list[i]['dim'], name='layer_h2_sigma' + str(i) + str(v), reuse=reuse, kr_layers=kr_layers)
+    h2_sigma = observed_data_layer(observed_y, missing_y, condition_indices, output_dim=types_list[i]['dim'], name='layer_h2_sigma' + str(i) + '_' + str(v), reuse=reuse, kr_layers=kr_layers)
     
     return [h2_mean, h2_sigma]
 
 def theta_pos(observed_y, missing_y, condition_indices, types_list, nObs, batch_size, i, v, reuse, kr_layers):
     
     #Mean layer
-    h2_mean = observed_data_layer(observed_y, missing_y, condition_indices, output_dim=types_list[i]['dim'], name='layer_h2' + str(i) + str(v), reuse=reuse, kr_layers=kr_layers)
+    h2_mean = observed_data_layer(observed_y, missing_y, condition_indices, output_dim=types_list[i]['dim'], name='layer_h2' + str(i) + '_' + str(v), reuse=reuse, kr_layers=kr_layers)
     #Sigma Layer
-    h2_sigma = observed_data_layer(observed_y, missing_y, condition_indices, output_dim=types_list[i]['dim'], name='layer_h2_sigma' + str(i) + str(v), reuse=reuse, kr_layers=kr_layers)
+    h2_sigma = observed_data_layer(observed_y, missing_y, condition_indices, output_dim=types_list[i]['dim'], name='layer_h2_sigma' + str(i) + '_' + str(v), reuse=reuse, kr_layers=kr_layers)
     
     return [h2_mean, h2_sigma]
 
 def theta_count(observed_y, missing_y, condition_indices, types_list, nObs, batch_size, i, v, reuse, kr_layers):
     
     #Lambda Layer
-    h2_lambda = observed_data_layer(observed_y, missing_y, condition_indices, output_dim=types_list[i]['dim'], name='layer_h2' + str(i) + str(v), reuse=reuse, kr_layers=kr_layers)
+    h2_lambda = observed_data_layer(observed_y, missing_y, condition_indices, output_dim=types_list[i]['dim'], name='layer_h2' + str(i) + '_' + str(v), reuse=reuse, kr_layers=kr_layers)
     
     return h2_lambda
 
 def theta_cat(observed_y, missing_y, condition_indices, types_list, nObs, batch_size, i, v, reuse, kr_layers):
     
     #Log pi layer, with zeros in the first value to avoid the identificability problem
-    h2_log_pi_partial = observed_data_layer(observed_y, missing_y, condition_indices, output_dim=int(types_list[i]['dim'])-1, name='layer_h2' + str(i) + str(v), reuse=reuse, kr_layers=kr_layers)
+    h2_log_pi_partial = observed_data_layer(observed_y, missing_y, condition_indices, output_dim=int(types_list[i]['dim'])-1, name='layer_h2' + str(i) + '_' + str(v), reuse=reuse, kr_layers=kr_layers)
     h2_log_pi = tf.concat([tf.zeros([batch_size,1]), h2_log_pi_partial],1)
     
     return h2_log_pi
@@ -236,9 +236,9 @@ def theta_cat(observed_y, missing_y, condition_indices, types_list, nObs, batch_
 def theta_ordinal(observed_y, missing_y, condition_indices, types_list, nObs, batch_size, i, v, reuse, kr_layers):
     
     #Theta layer, Dimension of ordinal - 1
-    h2_theta = observed_data_layer(observed_y, missing_y, condition_indices, output_dim=int(types_list[i]['dim'])-1, name='layer_h2' + str(i) + str(v), reuse=reuse, kr_layers=kr_layers)
+    h2_theta = observed_data_layer(observed_y, missing_y, condition_indices, output_dim=int(types_list[i]['dim'])-1, name='layer_h2' + str(i) + '_' + str(v), reuse=reuse, kr_layers=kr_layers)
     #Mean layer, a single value
-    h2_mean = observed_data_layer(observed_y, missing_y, condition_indices, output_dim=1, name='layer_h2_sigma' + str(i) + str(v), reuse=reuse, kr_layers=kr_layers)
+    h2_mean = observed_data_layer(observed_y, missing_y, condition_indices, output_dim=1, name='layer_h2_sigma' + str(i) + '_' + str(v), reuse=reuse, kr_layers=kr_layers)
     
     return [h2_theta, h2_mean]
 

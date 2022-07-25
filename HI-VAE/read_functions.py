@@ -22,7 +22,6 @@ def read_data(data_file0, types_file0, miss_file0, true_miss_file0, n_vis):
     true_miss_files = [true_miss_file0.replace('_VIS00', '_VIS'+str(v).zfill(2)) for v in range(n_vis)]
 
     #Read types of data from data files
-    data_visits = []
     for types_file in types_files:
         with open(types_file) as f:
             types_dict = [{k: v for k, v in row.items()} for row in csv.DictReader(f, skipinitialspace=True)]
