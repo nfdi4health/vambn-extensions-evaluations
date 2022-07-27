@@ -49,7 +49,7 @@ print('t =', '{:10.4f}'.format(0), 'Begin processing inputs')
 
 sample_size = 1274
 # get file list
-files = [i for i in os.listdir('data_python/') if not '_type' in i and not '_missing' in i]
+files = [i for i in os.listdir('data_python/') if not '_type' in i and not '_missing' in i and not 'DELETE_PLACEHOLDER' in i]
 # sds = [1]*6
 # sdims = dict(zip(files, sds))
 best_hyper = pd.read_csv('donald-results.csv')

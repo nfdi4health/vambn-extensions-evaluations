@@ -46,8 +46,11 @@ for (datan in names(data_all)){ # for every variable group
   
   ###################### Imputation
   print(datan)
-  if (grepl('stalone', datan))
+  if (grepl('stalone', datan)){
     data<-fillna(data) # if standalone data, mean and most frequent class imputation
+    data$SA_fam_ID_VIS00 <- as.factor(data$SA_fam_ID_VIS00)
+    data$SA_sex_VIS00 <- as.factor(data$SA_sex_VIS00)
+  }
 
   # if (!grepl('stalone_VIS6|stalone_VIS12|stalone_VIS24|snp_VIS1', datan)){
   if (!grepl('stalone_VIS00', datan)){
