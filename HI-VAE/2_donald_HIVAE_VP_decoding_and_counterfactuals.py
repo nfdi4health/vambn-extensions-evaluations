@@ -13,7 +13,7 @@ import helpers  # this is where the main training/decoding functions are, modifi
 def set_settings(opts, nepochs=500, modload=False,
                  save=True):  # note: modload doesnt do anything right now, hardcoded in helpers.py
     'replace setting template placeholders with file info'
-    inputf = re.sub('.csv', '', opts['files'].iloc[0])
+    inputf = opts['vargroups'].iloc[0]+'_VIS00'
     missf = inputf + '_missing.csv'
     typef = inputf + '_types.csv'
 
@@ -44,10 +44,11 @@ def set_settings(opts, nepochs=500, modload=False,
 sample_size = 1274
 # get file list
 files = [i for i in os.listdir('data_python/') if not '_type' in i and not '_missing' in i]
+vargroups = set([i.split('_')[0] for i in files])
 sds = [1]*6
 sdims = dict(zip(files, sds))
 best_hyper = pd.read_csv('donald-results.csv')
-if any(files != best_hyper['files']):
+if any(vargroups != best_hyper['vargroups']):
     print('ERROR!!')
 else:
     best_hyper['sdims'] = sds
@@ -60,34 +61,40 @@ VPcodes = pd.read_csv('../data/data_out/main_VirtualPPts.csv')
 dfs_dec = list()
 dfs_loglik = list()
 virt = list()
-for x, f in enumerate(files):
-    print(x+1, '/', len(files), 'decoding file...')
+for x, vg in enumerate(vargroups):
+    print(x+1, '/', len(vargroups), 'decoding vargroup ',vg)
     # replace placeholders in template
-    opts = dict(best_hyper[best_hyper['files'].copy() == f])
+    opts = dict(best_hyper[best_hyper['vargroups'].copy() == vg])
     opts['nbatch'].iloc[0] = sample_size
     settings = set_settings(opts, nepochs=1, modload=True, save=False)
 
     # run
-    zcodes = VPcodes['zcode_' + re.sub('.csv', '', f)]
-    scodes = VPcodes['scode_' + re.sub('.csv', '', f)] if 'scode_' + re.sub('.csv', '',
-                                                                            f) in VPcodes.columns else np.zeros(
-        zcodes.shape)
+    zcodes = VPcodes['zcode_' + vg]
+    scodes = VPcodes['scode_' + vg] if 'scode_' + vg in VPcodes.columns else np.zeros(zcodes.shape)
 
     dec = helpers.dec_network(settings, zcodes, scodes, VP=True)
-    subj = pd.read_csv('python_names/' + re.sub('.csv', '', f) + '_subj.csv')['x']
-    names = pd.read_csv('python_names/' + re.sub('.csv', '', f) + '_cols.csv')['x']
-    dat_dec = pd.DataFrame(dec)
-    dat_dec.columns = names
-    dat_dec['SUBJID'] = subj
-    virt.append(dec)
-    dfs_dec.append(dat_dec)
 
-    loglik = helpers.dec_network_loglik(settings, zcodes, scodes, VP=True)
-    loglik = np.nanmean(np.array(loglik).T, axis=1)
-    dat_loglik = pd.DataFrame(loglik)
-    dat_loglik.columns = [f]
-    dat_loglik['SUBJID'] = subj
-    dfs_loglik.append(dat_loglik)
+    for vis in range(dec.shape[1]):
+        dec_vis = dec[:,vis,:]
+        virt.append(dec_vis)
+
+        subj = pd.read_csv('python_names/' + vg + '_VIS' + str(vis).zfill(2) + '_subj.csv')['x']
+        names = pd.read_csv('python_names/' + vg + '_VIS'+ str(vis).zfill(2) + '_cols.csv')['x']
+
+        dat_dec = pd.DataFrame(dec_vis)
+        dat_dec.columns = names
+        dat_dec['SUBJID'] = subj
+        dfs_dec.append(dat_dec)
+
+    loglik_list = helpers.dec_network_loglik(settings, zcodes, scodes, VP=True)
+
+    for vis, loglik_vis in enumerate(loglik_list):
+        loglik_vis = np.nanmean(np.array(loglik_vis).T, axis=1)
+        subj = pd.read_csv('python_names/' + vg + '_VIS' + str(vis).zfill(2) + '_subj.csv')['x']
+        dat_loglik = pd.DataFrame(loglik_vis)
+        dat_loglik.columns = [vg + '_VIS' + str(vis).zfill(2)]
+        dat_loglik['SUBJID'] = subj
+        dfs_loglik.append(dat_loglik)
 
 virt_dic = dict(zip(files, virt))
 decoded_dec = helpers.merge_dat(dfs_dec)

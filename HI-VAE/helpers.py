@@ -282,9 +282,13 @@ def dec_network(settings,zcodes,scodes,VP=False):
             feedDict.update({i: d for i, d in zip(tf_nodes['ground_batch_observed'], data_list_observed)})
             feedDict[tf_nodes['miss_list']] = miss_list
             if VP==True:
-                vpfile='VP_misslist/'+re.sub('data_python/|.csv','',args.data_file)+'_vpmiss.csv'
-                print('::::::::::::'+vpfile)
-                feedDict[tf_nodes['miss_list_VP']] = pd.read_csv(vpfile,header=None)
+                vpmisslists = []
+                vis00_vpfile='VP_misslist/'+re.sub('data_python/|.csv','',args.data_file)+'_vpmiss.csv'
+                for vis in range(n_vis):
+                    vis_vpfile = re.sub('_VIS00','_VIS'+str(vis).zfill(2), vis00_vpfile)
+                    vpmisslists.append(pd.read_csv(vis_vpfile,header=None))
+                print(':::::::::::: Read'+vis00_vpfile+'through'+vis_vpfile)
+                feedDict[tf_nodes['miss_list_VP']] = np.stack(vpmisslists, axis=1)
             elif VP=='nomiss':
                 print(':::::::::::: ones for miss list VP')
                 feedDict[tf_nodes['miss_list_VP']] = np.ones(miss_list.shape)
@@ -359,9 +363,13 @@ def dec_network_loglik(settings,zcodes,scodes,VP=False):
             feedDict.update({i: d for i, d in zip(tf_nodes['ground_batch_observed'], data_list_observed)})
             feedDict[tf_nodes['miss_list']] = miss_list
             if VP==True:
-                vpfile='VP_misslist/'+re.sub('data_python/|.csv','',args.data_file)+'_vpmiss.csv'
-                print('::::::::::::'+vpfile)
-                feedDict[tf_nodes['miss_list_VP']] = pd.read_csv(vpfile,header=None)
+                vpmisslists = []
+                vis00_vpfile='VP_misslist/'+re.sub('data_python/|.csv','',args.data_file)+'_vpmiss.csv'
+                for vis in range(n_vis):
+                    vis_vpfile = re.sub('_VIS00','_VIS'+str(vis).zfill(2), vis00_vpfile)
+                    vpmisslists.append(pd.read_csv(vis_vpfile,header=None))
+                print(':::::::::::: Read'+vis00_vpfile+'through'+vis_vpfile)
+                feedDict[tf_nodes['miss_list_VP']] = np.stack(vpmisslists, axis=1)
             elif VP=='nomiss':
                 print(':::::::::::: ones for miss list VP')
                 feedDict[tf_nodes['miss_list_VP']] = np.ones(miss_list.shape)
