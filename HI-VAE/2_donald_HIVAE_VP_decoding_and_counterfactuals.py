@@ -57,8 +57,15 @@ else:
 ## + Get Loglikelihoods for R plot!
 
 VPcodes = pd.read_csv('../data/data_out/main_VirtualPPts.csv')
+SA_cols = [c for c in VPcodes.columns if 'SA_' in c]
+dat_SA = VPcodes[SA_cols]
+
+subj_SA = pd.read_csv('python_names/stalone_VIS00_subj.csv')['x']
+dat_SA['SUBJID'] = subj_SA
 
 dfs_dec = list()
+dfs_dec.append(dat_SA)
+
 dfs_loglik = list()
 virt = list()
 for x, vg in enumerate(vargroups):
