@@ -50,7 +50,7 @@ vg_nutrition_vis13<-vg_nutrition[,grepl('SUBJID|_VIS13$',colnames(vg_nutrition))
 vg_nutrition_vis14<-vg_nutrition[,grepl('SUBJID|_VIS14$',colnames(vg_nutrition))]
 vg_nutrition_vis15<-vg_nutrition[,grepl('SUBJID|_VIS15$',colnames(vg_nutrition))]
 
-vg_anthropometric <- visitData_complete[,grep("bmr|underrep", colnames(visitData_complete), value = TRUE)]
+vg_anthropometric <- visitData_complete[,grep("bmr|bmi|^ovw|underrep", colnames(visitData_complete), value = TRUE)]
 colnames(vg_anthropometric)<-paste0('ANTHRO_',colnames(vg_anthropometric))
 vg_anthropometric$SUBJID<-pt
 vg_anthropometric_vis00<-vg_anthropometric[,grepl('SUBJID|_VIS00$',colnames(vg_anthropometric))]

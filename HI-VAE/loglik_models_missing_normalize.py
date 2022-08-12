@@ -77,7 +77,7 @@ def loglik_pos(batch_data,list_type,theta,normalization_params,kernel_initialize
     output['log_p_x'] = tf.multiply(log_p_x, missing_mask)
     output['log_p_x_missing'] = tf.multiply(log_p_x, 1.0-missing_mask)
     output['params'] = [est_mean, est_var]
-    output['samples'] = tf.exp(tf.contrib.distributions.Normal(est_mean,tf.sqrt(est_var)).sample()) - 1.0
+    output['samples'] = tf.clip_by_value(tf.exp(tf.contrib.distributions.Normal(est_mean,tf.sqrt(est_var)).sample()) - 1.0,0,1e20)
         
     return output
 
