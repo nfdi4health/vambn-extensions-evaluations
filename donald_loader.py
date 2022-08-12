@@ -1,6 +1,9 @@
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 ### reads donald data, transforms it into vambn data format (one participant per row, multiple visits per row)
+
+use_split = True #train test split?
 
 df = #pd.read_sas('path/to/donald/data.sas7bdat')
 
@@ -52,6 +55,11 @@ df_vambn.rename(columns={'pers_ID': 'SUBJID'}, inplace=True) #rename pers_ID to 
 participant_dist = pd.Series([df_vambn['alter_VIS'+str(bla).zfill(2)].count() for bla in range(16)])
 print('participant counts for the 16 visits:\n', participant_dist)
 
-df_vambn.to_csv('data/donald-data.csv')
+if use_split:
+    train, test = train_test_split(df_vambn, train_size=1024) #results in 1024:250, is ~80%
+    train.to_csv('data/donald-data.csv')
+    test.to_csv('data/donald-data-testsplit.csv')
+else:
+    df_vambn.to_csv('data/donald-data.csv')
 
 print('fin')
