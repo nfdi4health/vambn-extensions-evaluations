@@ -33,5 +33,6 @@ def getArgs(argv=None):
     parser.add_argument('--miss_file', type=str, default='Missing_test.csv', help='File with the missing indexes mask')
     parser.add_argument('--true_miss_file', type=str, help='File with the missing indexes when there are NaN in the data')
     parser.add_argument('--learning_rate', type=float, help='Learning rate')
+    parser.add_argument('--n_vis', type=int, help='Number of visits')
  
     return parser.parse_args(argv)

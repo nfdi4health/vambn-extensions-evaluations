@@ -1,5 +1,5 @@
-lrates,nbatch,wdecay,ydims,sdims,vargroups
-0.01,127,0,1,1,times
-0.01,127,0,1,1,nutrition
-0.01,127,0,1,2,anthropometric
-0.01,127,0,1,2,socioeconomic
+lrates,nbatch,wdecay,ydims,sdims,nvis,vargroups
+0.01,127,0,1,1,16,times
+0.01,127,0,1,1,16,nutrition
+0.01,127,0,1,2,16,anthropometric
+0.01,127,0,1,2,16,socioeconomic

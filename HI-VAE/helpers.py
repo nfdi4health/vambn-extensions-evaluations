@@ -30,7 +30,6 @@ def train_network(settings):
     argvals = settings.split()
     args = parser_arguments.getArgs(argvals)
     print(args)
-    n_vis = 16
 
     #Create a directoy for the save file
     if not os.path.exists('./Saved_Networks/' + args.save_file):
@@ -43,11 +42,11 @@ def train_network(settings):
     sess_HVAE = tf.Graph()
 
     with sess_HVAE.as_default():
-        tf_nodes = graph_new.HVAE_graph(args.model_name, args.types_file, args.batch_size, n_vis, learning_rate=args.learning_rate, z_dim=args.dim_latent_z,
+        tf_nodes = graph_new.HVAE_graph(args.model_name, args.types_file, args.batch_size, args.n_vis, learning_rate=args.learning_rate, z_dim=args.dim_latent_z,
                                         y_dim=args.dim_latent_y, s_dim=args.dim_latent_s, y_dim_partition=args.dim_latent_y_partition)
 
     ################### Running the VAE Training #################################
-    train_data, types_dict, miss_mask, true_miss_mask, n_samples = read_functions.read_data(args.data_file, args.types_file, args.miss_file, args.true_miss_file, n_vis)
+    train_data, types_dict, miss_mask, true_miss_mask, n_samples = read_functions.read_data(args.data_file, args.types_file, args.miss_file, args.true_miss_file, args.n_vis)
     n_batches = int(np.floor(np.shape(train_data)[0]/args.batch_size))#Get an integer number of batches
     miss_mask = np.multiply(miss_mask, true_miss_mask)#Compute the real miss_mask
 
@@ -91,7 +90,7 @@ def train_network(settings):
 
             for i in range(n_batches):
                 data_list, miss_list = read_functions.next_batch(train_data_aux, types_dict, miss_mask_aux, args.batch_size, index_batch=i) #Create inputs for the feed_dict
-                data_list_observed = [data_list[i]*np.reshape(miss_list[:,:,i],[args.batch_size,n_vis,1]) for i in range(len(data_list))] #Delete not known data (input zeros)
+                data_list_observed = [data_list[i]*np.reshape(miss_list[:,:,i],[args.batch_size,args.n_vis,1]) for i in range(len(data_list))] #Delete not known data (input zeros)
 
                 #Create feed dictionary
                 feedDict = {i: d for i, d in zip(tf_nodes['ground_batch'], data_list)} #for each variable in vargroup
@@ -142,7 +141,6 @@ def enc_network(settings):
     argvals = settings.split()
     args = parser_arguments.getArgs(argvals)
     print(args)
-    n_vis = 16
 
     #Create a directoy for the save file
     if not os.path.exists('./Saved_Networks/' + args.save_file):
@@ -154,10 +152,10 @@ def enc_network(settings):
     sess_HVAE = tf.Graph()
 
     with sess_HVAE.as_default():
-        tf_nodes = graph_new.HVAE_graph(args.model_name, args.types_file, args.batch_size, n_vis, learning_rate=args.learning_rate, z_dim=args.dim_latent_z,
+        tf_nodes = graph_new.HVAE_graph(args.model_name, args.types_file, args.batch_size, args.n_vis, learning_rate=args.learning_rate, z_dim=args.dim_latent_z,
                                         y_dim=args.dim_latent_y, s_dim=args.dim_latent_s, y_dim_partition=args.dim_latent_y_partition)
 
-    train_data, types_dict, miss_mask, true_miss_mask, n_samples = read_functions.read_data(args.data_file, args.types_file, args.miss_file, args.true_miss_file, n_vis)
+    train_data, types_dict, miss_mask, true_miss_mask, n_samples = read_functions.read_data(args.data_file, args.types_file, args.miss_file, args.true_miss_file, args.n_vis)
     #Get an integer number of batches
     n_batches = int(np.floor(np.shape(train_data)[0]/args.batch_size))
     #Compute the real miss_mask
@@ -193,7 +191,7 @@ def enc_network(settings):
         for i in range(n_batches):      
 
             data_list, miss_list = read_functions.next_batch(train_data, types_dict, miss_mask, args.batch_size, index_batch=i)#Create train minibatch
-            data_list_observed = [data_list[i]*np.reshape(miss_list[:,:,i],[args.batch_size,n_vis,1]) for i in range(len(data_list))] #Delete not known data (input zeros)
+            data_list_observed = [data_list[i]*np.reshape(miss_list[:,:,i],[args.batch_size,args.n_vis,1]) for i in range(len(data_list))] #Delete not known data (input zeros)
 
             #Create feed dictionary
             feedDict = {i: d for i, d in zip(tf_nodes['ground_batch'], data_list)}
@@ -235,7 +233,6 @@ def dec_network(settings,zcodes,scodes,VP=False):
     argvals = settings.split()
     args = parser_arguments.getArgs(argvals)
     print(args)
-    n_vis=16
 
     #Create a directoy for the save file
     if not os.path.exists('./Saved_Networks/' + args.save_file):
@@ -246,10 +243,10 @@ def dec_network(settings,zcodes,scodes,VP=False):
     #Creating graph
     sess_HVAE = tf.Graph()
     with sess_HVAE.as_default():
-        tf_nodes = graph_new.HVAE_graph(args.model_name, args.types_file, args.batch_size, n_vis, learning_rate=args.learning_rate, z_dim=args.dim_latent_z,
+        tf_nodes = graph_new.HVAE_graph(args.model_name, args.types_file, args.batch_size, args.n_vis, learning_rate=args.learning_rate, z_dim=args.dim_latent_z,
                                         y_dim=args.dim_latent_y, s_dim=args.dim_latent_s, y_dim_partition=args.dim_latent_y_partition)
 
-    train_data, types_dict, miss_mask, true_miss_mask, n_samples = read_functions.read_data(args.data_file, args.types_file, args.miss_file, args.true_miss_file, n_vis)
+    train_data, types_dict, miss_mask, true_miss_mask, n_samples = read_functions.read_data(args.data_file, args.types_file, args.miss_file, args.true_miss_file, args.n_vis)
     
     #Get an integer number of batches
     n_batches = int(np.floor(np.shape(train_data)[0]/args.batch_size))
@@ -275,7 +272,7 @@ def dec_network(settings,zcodes,scodes,VP=False):
         for i in range(n_batches):      
 
             data_list, miss_list = read_functions.next_batch(train_data, types_dict, miss_mask, args.batch_size, index_batch=i) #Create inputs for the feed_dict
-            data_list_observed = [data_list[i]*np.reshape(miss_list[:,:,i],[args.batch_size,n_vis,1]) for i in range(len(data_list))] #Delete not known data (input zeros)
+            data_list_observed = [data_list[i]*np.reshape(miss_list[:,:,i],[args.batch_size,args.n_vis,1]) for i in range(len(data_list))] #Delete not known data (input zeros)
 
             #Create feed dictionary
             feedDict = {i: d for i, d in zip(tf_nodes['ground_batch'], data_list)}
@@ -284,7 +281,7 @@ def dec_network(settings,zcodes,scodes,VP=False):
             if VP==True:
                 vpmisslists = []
                 vis00_vpfile='VP_misslist/'+re.sub('data_python/|.csv','',args.data_file)+'_vpmiss.csv'
-                for vis in range(n_vis):
+                for vis in range(args.n_vis):
                     vis_vpfile = re.sub('_VIS00','_VIS'+str(vis).zfill(2), vis00_vpfile)
                     vpmisslists.append(pd.read_csv(vis_vpfile,header=None))
                 print(':::::::::::: Read'+vis00_vpfile+'through'+vis_vpfile)
@@ -316,7 +313,6 @@ def dec_network_loglik(settings,zcodes,scodes,VP=False):
     argvals = settings.split()
     args = parser_arguments.getArgs(argvals)
     print(args)
-    n_vis = 16
 
     #Create a directoy for the save file
     if not os.path.exists('./Saved_Networks/' + args.save_file):
@@ -327,10 +323,10 @@ def dec_network_loglik(settings,zcodes,scodes,VP=False):
     #Creating graph
     sess_HVAE = tf.Graph()
     with sess_HVAE.as_default():
-        tf_nodes = graph_new.HVAE_graph(args.model_name, args.types_file, args.batch_size, n_vis, learning_rate=args.learning_rate, z_dim=args.dim_latent_z,
+        tf_nodes = graph_new.HVAE_graph(args.model_name, args.types_file, args.batch_size, args.n_vis, learning_rate=args.learning_rate, z_dim=args.dim_latent_z,
                                         y_dim=args.dim_latent_y, s_dim=args.dim_latent_s, y_dim_partition=args.dim_latent_y_partition)
 
-    train_data, types_dict, miss_mask, true_miss_mask, n_samples = read_functions.read_data(args.data_file, args.types_file, args.miss_file, args.true_miss_file, n_vis)
+    train_data, types_dict, miss_mask, true_miss_mask, n_samples = read_functions.read_data(args.data_file, args.types_file, args.miss_file, args.true_miss_file, args.n_vis)
     
     #Get an integer number of batches
     n_batches = int(np.floor(np.shape(train_data)[0]/args.batch_size))
@@ -356,7 +352,7 @@ def dec_network_loglik(settings,zcodes,scodes,VP=False):
         for i in range(n_batches):      
 
             data_list, miss_list = read_functions.next_batch(train_data, types_dict, miss_mask, args.batch_size, index_batch=i) #Create inputs for the feed_dict
-            data_list_observed = [data_list[i]*np.reshape(miss_list[:,:,i],[args.batch_size,n_vis,1]) for i in range(len(data_list))] #Delete not known data (input zeros)
+            data_list_observed = [data_list[i]*np.reshape(miss_list[:,:,i],[args.batch_size,args.n_vis,1]) for i in range(len(data_list))] #Delete not known data (input zeros)
 
             #Create feed dictionary
             feedDict = {i: d for i, d in zip(tf_nodes['ground_batch'], data_list)}
@@ -365,7 +361,7 @@ def dec_network_loglik(settings,zcodes,scodes,VP=False):
             if VP==True:
                 vpmisslists = []
                 vis00_vpfile='VP_misslist/'+re.sub('data_python/|.csv','',args.data_file)+'_vpmiss.csv'
-                for vis in range(n_vis):
+                for vis in range(args.n_vis):
                     vis_vpfile = re.sub('_VIS00','_VIS'+str(vis).zfill(2), vis00_vpfile)
                     vpmisslists.append(pd.read_csv(vis_vpfile,header=None))
                 print(':::::::::::: Read'+vis00_vpfile+'through'+vis_vpfile)
