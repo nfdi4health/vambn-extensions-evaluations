@@ -41,7 +41,7 @@ def set_settings(opts, nepochs=500, modload=False,
 
 #### General settings
 
-sample_size = 1274
+sample_size = 1024
 # get file list
 files = [i for i in os.listdir('data_python/') if not '_type' in i and not '_missing' in i]
 vargroups = set([i.split('_')[0] for i in files])
