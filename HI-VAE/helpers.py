@@ -67,6 +67,7 @@ def train_network(settings):
         KL_s_epoch = []
         KL_z_epoch = []
         loss_epoch=[]
+        best_loss=float('inf')
         for epoch in range(args.epochs):
             avg_loss = 0.
             avg_loss_reg = 0.
@@ -120,11 +121,17 @@ def train_network(settings):
                 avg_loss_reg+=np.mean(loss_reg)
 
             print('Epoch: '+str(epoch)+' Rec. Loss: '+str(avg_loss/n_batches)+' KL s: '+str(avg_KL_s/n_batches)+' KL z: '+str(avg_KL_z/n_batches))
-            loss_epoch.append(-avg_loss/n_batches)
+            loss_curr_epoch = -avg_loss/n_batches
+            loss_epoch.append(loss_curr_epoch)
+            if loss_curr_epoch < best_loss:
+                best_loss = loss_curr_epoch
+                if args.save_best:
+                    print('Best Epoch: Saving Variables ... '+network_file_name)
+                    save_path = saver.save(session, network_file_name)
 
-            if epoch % args.save == 0:
-                print('Saving Variables ... '+network_file_name)  
-                save_path = saver.save(session, network_file_name)    
+            if not args.save_best and epoch % args.save == 0:
+                print('First/Last Epoch: Saving Variables ... '+network_file_name)
+                save_path = saver.save(session, network_file_name)
 
         print('Training Finished ...')
         plt.clf()

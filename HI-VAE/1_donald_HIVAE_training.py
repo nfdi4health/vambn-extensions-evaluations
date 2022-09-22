@@ -14,8 +14,9 @@ import helpers  # this is where the main training/decoding functions are, modifi
 
 
 
-def set_settings(opts, nepochs=500, modload=False,
-                 save=True):  # note: modload doesnt do anything right now, hardcoded in helpers.py
+def set_settings(opts, nepochs=500, modload=False, save=True, save_best=False):
+    # note: modload doesnt do anything right now, hardcoded in helpers.py.
+    # save_best=True saves EVERY epoch when it achieves lowest loss, save_best=False only saves last epoch
     'replace setting template placeholders with file info'
     inputf = re.sub('.csv', '', opts['files'].iloc[0])
     missf = inputf + '_missing.csv'
@@ -23,7 +24,7 @@ def set_settings(opts, nepochs=500, modload=False,
 
     template = '--epochs NEPOCHS --model_name model_HIVAE_inputDropout --restore MODLOAD \
         --data_file data_python/INPUT_FILE.csv --types_file data_python/TYPES_FILE \
-         --batch_size NBATCH --save NEPFILL --save_file SAVE_FILE\
+         --batch_size NBATCH --save NEPFILL --save_file SAVE_FILE --save_best SAVE_BEST\
         --dim_latent_s SDIM --dim_latent_z 1 --dim_latent_y YDIM \
         --miss_percentage_train 0 --miss_percentage_test 0 \
         --true_miss_file data_python/MISS_FILE --learning_rate LRATE'
@@ -33,6 +34,7 @@ def set_settings(opts, nepochs=500, modload=False,
     settings = re.sub('NBATCH', str(opts['nbatch'].iloc[0]), settings)
     settings = re.sub('NEPOCHS', str(nepochs), settings)
     settings = re.sub('NEPFILL', str(nepochs - 1), settings) if save else re.sub('NEPFILL', str(nepochs * 2), settings)
+    settings = re.sub('SAVE_BEST', '1', settings) if save_best else re.sub('SAVE_BEST', '0', settings)
     settings = re.sub('YDIM', str(opts['ydims'].iloc[0]), settings)
     settings = re.sub('SDIM', str(opts['sdims'].iloc[0]), settings)
     settings = re.sub('MISS_FILE', missf, settings) if not 'medhist' in inputf else re.sub(
