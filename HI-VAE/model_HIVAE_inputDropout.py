@@ -15,12 +15,16 @@ import tensorflow as tf
 from keras.layers import *
 import VAE_functions
 
-def lstm_in(X_list, n_units):
-    lstm_layer = LSTM(units=n_units, kernel_initializer=tf.random_normal_initializer(stddev=0.05), name='lstm_in')
+#LSTM is actually no longer used:
+#   Instead, this dense layer acts as an intermediate step between the input data and the zcode
+#   This is done because it may improve learning dependencies, akin to the decoder's intermediate representation
+#   Also, this pipeline stays closer to the original LSTM extension structure, so they are more comparable
+def feedforward_in(X_list, n_units):
+    dense_layer = Dense(units=n_units, kernel_initializer=tf.random_normal_initializer(stddev=0.05), name='feedforward_in')
 
     X = [tf.concat(vis_list,1) for vis_list in X_list] #concat ncols
-    X = tf.stack(X,1) #stack nvis
-    h_end = lstm_layer(X)
+    X = tf.concat(X,1) #concat nvis as well! shape of visits and columns is irrelevant for dense layer
+    h_end = dense_layer(X)
     return h_end
 
 

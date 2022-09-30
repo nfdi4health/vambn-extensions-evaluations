@@ -45,8 +45,8 @@ def HVAE_graph(model_name, types_file, batch_size, n_vis, learning_rate=1e-3, z_
     #Mimic the old reuse behaviour by remembering all initialized layers in this dict, with their names as keys
     kr_layers = {}
 
-    print('[*] Defining LSTM_In...')
-    h_end = model.lstm_in(X_list, n_units=20)
+    print('[*] Defining Feedforward input layer...')
+    h_end = model.feedforward_in(X_list, n_units=20)
 
     print('[*] Defining Encoder...')
     samples, q_params = model.encoder(h_end, miss_list, batch_size, z_dim, s_dim, tau, kr_layers)
