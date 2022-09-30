@@ -48,9 +48,10 @@ def set_settings(opts, nepochs=500, modload=False,
 t = time.process_time()
 print('t =', '{:10.4f}'.format(0), 'Begin processing inputs')
 
-sample_size = 1024
+sample_size = 1274
+# sample_size = 1024
 # get file list
-files = [i for i in os.listdir('data_python/') if not '_type' in i and not '_missing' in i and not 'DELETE_PLACEHOLDER' in i]
+files = [i for i in os.listdir('data_python/') if not '_type' in i and not '_missing' in i]
 vargroups = set([i.split('_')[0] for i in files])
 # sds = [1]*6
 # sdims = dict(zip(files, sds))
@@ -69,6 +70,7 @@ for cf in [i for i in os.listdir('python_names/') if '_cols' in i]:
             writer.writerow(types_dict[row['x']])
 
 print('t =', '{:10.4f}'.format(time.process_time()-t), 'Begin training all vargroups')
+print(vargroups)
 for x, vg in enumerate(vargroups):
     opts = dict(best_hyper[best_hyper['vargroups'].copy() == vg])
     settings = set_settings(opts, modload=False, save=True)
