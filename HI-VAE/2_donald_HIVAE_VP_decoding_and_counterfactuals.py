@@ -22,7 +22,7 @@ def set_settings(opts, nepochs=500, modload=False,
          --batch_size NBATCH --save NEPFILL --save_file SAVE_FILE\
         --dim_latent_s SDIM --dim_latent_z 1 --dim_latent_y YDIM \
         --miss_percentage_train 0 --miss_percentage_test 0 \
-        --true_miss_file data_python/MISS_FILE --learning_rate LRATE'
+        --true_miss_file data_python/MISS_FILE --learning_rate LRATE --n_vis N_VIS'
 
     # replace placeholders in template
     settings = re.sub('INPUT_FILE', inputf, template)
@@ -37,11 +37,12 @@ def set_settings(opts, nepochs=500, modload=False,
     settings = re.sub('SAVE_FILE', inputf, settings)
     settings = re.sub('LRATE', str(opts['lrates'].iloc[0]), settings)
     settings = re.sub('MODLOAD', '1', settings) if modload else re.sub('MODLOAD', '0', settings)
+    settings = re.sub('N_VIS', str(opts['nvis'].iloc[0]), settings)
     return settings
 
 #### General settings
 
-sample_size = 1274
+sample_size = 1024
 # get file list
 files = [i for i in os.listdir('data_python/') if not '_type' in i and not '_missing' in i]
 vargroups = set([i.split('_')[0] for i in files])
