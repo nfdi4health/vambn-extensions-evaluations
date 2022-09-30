@@ -1,2 +1,15 @@
 # IDE settings
 .idea
+HI-VAE/__pycache__/
+data/
+HI-VAE/python_names/
+HI-VAE/data_python/
+HI-VAE/VP_misslist/
+HI-VAE/Saved_Networks/
+HI-VAE/decodedVP.csv
+HI-VAE/metaenc.csv
+HI-VAE/reconRP.csv
+HI-VAE/training_logliks.csv
+HI-VAE/virtual_logliks.csv
+HI-VAE/SPLOM_*
+
