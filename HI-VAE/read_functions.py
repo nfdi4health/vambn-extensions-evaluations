@@ -47,6 +47,7 @@ def read_data(data_file0, types_file0, miss_file0, true_miss_file0, n_vis):
     true_miss_mask = np.stack(true_miss_mask_visits, 1)
 
     data_masked = np.ma.masked_where(np.isnan(data),data)
+    print(types_dict)
     #We need to fill the data depending on the given data...
     data_filler = []
     for i in range(len(types_dict)):
@@ -60,7 +61,6 @@ def read_data(data_file0, types_file0, miss_file0, true_miss_file0, n_vis):
             data_filler.append(0.0)
 
     data = data_masked.filled(data_filler)
-    
     #Construct the data matrices
     data_complete = []
     for i in range(np.shape(data)[2]):
@@ -105,6 +105,7 @@ def read_data(data_file0, types_file0, miss_file0, true_miss_file0, n_vis):
         
     #Read Missing mask from csv (contains positions of missing values)
     n_samples = np.shape(data)[0]
+    print(n_samples)
     n_variables = len(types_dict)
     miss_mask_visits = []
     for miss_file in miss_files:
@@ -140,7 +141,7 @@ def next_batch(data, types_dict, miss_mask, batch_size, index_batch):
     return data_list, miss_list
 
 def samples_concatenation(samples):
-
+    print(len(samples))#, len(samples[0]))
     batches_samples_x = []
     for i,batch in enumerate(samples):
         vis_samples_x = []
@@ -155,7 +156,9 @@ def samples_concatenation(samples):
             samples_y = np.concatenate([samples_y,batch['y']],0)
             samples_z = np.concatenate([samples_z,batch['z']],0)
             samples_s = np.concatenate([samples_s,batch['s']],0)
+    print(len(batches_samples_x), len(batches_samples_x[0]))
     x_arr = list(np.swapaxes(np.array(batches_samples_x), 1, 2)) #nbatch*[batchsize,nvis,coldim]
+
     return samples_s, samples_z, samples_y, np.concatenate(x_arr, 0)
 
 def discrete_variables_transformation(data, types_dict):

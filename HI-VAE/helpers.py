@@ -9,15 +9,28 @@ import matplotlib
 from matplotlib import pyplot as plt
 import time
 import re
+from functools import reduce
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 
+
 def merge_dat(lis):
     'merge all dataframes in a list on SUBJID'
-    df = lis[0]
-    for x in lis[1:]:
-        df=pd.merge(df, x, on = 'SUBJID')
+    df = pd.concat(lis, axis=1)  # merges based on same column (SUBJID in our case)
     return df
+
+
+def adapt_tensor_length(tensor_in, sample_size):
+    """Function ensures that the tensors have the correct length for the sample size"""
+    if sample_size == len(tensor_in):
+        return tensor_in
+    elif sample_size > len(tensor_in):
+        diff = (sample_size-len(tensor_in))*(-1)
+        tensor_out = np.vstack((tensor_in, tensor_in[diff:]))
+    else:
+        tensor_out = tensor_in[:sample_size]
+    return tensor_out
+
 
 def print_loss(epoch, start_time, avg_loss, avg_test_loglik, avg_KL_s, avg_KL_z):
     'for network training output'
@@ -227,12 +240,12 @@ def enc_network(settings):
         encs=np.argmax(q_params_complete['s'],1)
         encz=q_params_complete['z'][0,:,:]
         return [encs,encz,train_data_transformed]
-        
+
+
 def dec_network(settings,zcodes,scodes,VP=False):
     'decode using set s and z values (if generated provide a generated miss_list) and return decoded data'
     argvals = settings.split()
     args = parser_arguments.getArgs(argvals)
-    print(args)
 
     #Create a directoy for the save file
     if not os.path.exists('./Saved_Networks/' + args.save_file):
@@ -247,12 +260,17 @@ def dec_network(settings,zcodes,scodes,VP=False):
                                         y_dim=args.dim_latent_y, s_dim=args.dim_latent_s, y_dim_partition=args.dim_latent_y_partition)
 
     train_data, types_dict, miss_mask, true_miss_mask, n_samples = read_functions.read_data(args.data_file, args.types_file, args.miss_file, args.true_miss_file, args.n_vis)
-    
+    # duplicate last rows to match shape
+    train_data = adapt_tensor_length(train_data, args.batch_size)
+
     #Get an integer number of batches
-    n_batches = int(np.floor(np.shape(train_data)[0]/args.batch_size))
-    
+    # n_batches = int(np.floor(np.shape(train_data)[0]/args.batch_size))
+    n_batches = 1
+
     ######Compute the real miss_mask
     miss_mask = np.multiply(miss_mask, true_miss_mask)
+    # duplicate last rows to match shape
+    miss_mask = adapt_tensor_length(miss_mask, args.batch_size)
         
     with tf.Session(graph=sess_HVAE) as session:
         # Add ops to save and restore all the variables.
@@ -285,7 +303,10 @@ def dec_network(settings,zcodes,scodes,VP=False):
                     vis_vpfile = re.sub('_VIS00','_VIS'+str(vis).zfill(2), vis00_vpfile)
                     vpmisslists.append(pd.read_csv(vis_vpfile,header=None))
                 print(':::::::::::: Read'+vis00_vpfile+'through'+vis_vpfile)
-                feedDict[tf_nodes['miss_list_VP']] = np.stack(vpmisslists, axis=1)
+                vpmisslists = np.stack(vpmisslists, axis=1)
+                # duplicate last rows to match shape
+                vpmisslists = adapt_tensor_length(vpmisslists, args.batch_size)
+                feedDict[tf_nodes['miss_list_VP']] = vpmisslists
             elif VP=='nomiss':
                 print(':::::::::::: ones for miss list VP')
                 feedDict[tf_nodes['miss_list_VP']] = np.ones(miss_list.shape)
@@ -327,13 +348,18 @@ def dec_network_loglik(settings,zcodes,scodes,VP=False):
                                         y_dim=args.dim_latent_y, s_dim=args.dim_latent_s, y_dim_partition=args.dim_latent_y_partition)
 
     train_data, types_dict, miss_mask, true_miss_mask, n_samples = read_functions.read_data(args.data_file, args.types_file, args.miss_file, args.true_miss_file, args.n_vis)
-    
+    # duplicate last rows to match shape
+    train_data = adapt_tensor_length(train_data, args.batch_size)
+
     #Get an integer number of batches
     n_batches = int(np.floor(np.shape(train_data)[0]/args.batch_size))
+    n_batches = 1
     
     ######Compute the real miss_mask
     miss_mask = np.multiply(miss_mask, true_miss_mask)
-        
+    # duplicate last rows to match shape
+    miss_mask = adapt_tensor_length(miss_mask, args.batch_size)
+
     with tf.Session(graph=sess_HVAE) as session:
         # Add ops to save and restore all the variables.
         saver = tf.train.Saver()
@@ -365,7 +391,10 @@ def dec_network_loglik(settings,zcodes,scodes,VP=False):
                     vis_vpfile = re.sub('_VIS00','_VIS'+str(vis).zfill(2), vis00_vpfile)
                     vpmisslists.append(pd.read_csv(vis_vpfile,header=None))
                 print(':::::::::::: Read'+vis00_vpfile+'through'+vis_vpfile)
-                feedDict[tf_nodes['miss_list_VP']] = np.stack(vpmisslists, axis=1)
+                vpmisslists = np.stack(vpmisslists, axis=1)
+                # duplicate last rows to match shape
+                vpmisslists = adapt_tensor_length(vpmisslists, args.batch_size)
+                feedDict[tf_nodes['miss_list_VP']] = vpmisslists
             elif VP=='nomiss':
                 print(':::::::::::: ones for miss list VP')
                 feedDict[tf_nodes['miss_list_VP']] = np.ones(miss_list.shape)

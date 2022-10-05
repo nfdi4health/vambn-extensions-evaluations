@@ -10,6 +10,12 @@ import helpers  # this is where the main training/decoding functions are, modifi
 # import warnings
 # warnings.filterwarnings('ignore') ########## NOTE: comment out for testing in case it's hiding problems
 
+
+def preprocess(x, df1):
+    df2 = pd.merge(df1, x, on="SUBJID")
+    df2.to_csv("decodedVP.csv", mode="a", header=False, index=False)
+
+
 def set_settings(opts, nepochs=500, modload=False,
                  save=True):  # note: modload doesnt do anything right now, hardcoded in helpers.py
     'replace setting template placeholders with file info'
@@ -42,10 +48,12 @@ def set_settings(opts, nepochs=500, modload=False,
 
 #### General settings
 
-sample_size = 1274
+sample_size = 1312
 # get file list
 files = [i for i in os.listdir('data_python/') if not '_type' in i and not '_missing' in i]
 vargroups = set([i.split('_')[0] for i in files])
+vargroups = ['anthropometric', 'times', 'socioeconomic', 'nutrition']
+print(vargroups)
 sds = [1]*6
 sdims = dict(zip(files, sds))
 best_hyper = pd.read_csv('donald-results.csv')
@@ -66,7 +74,7 @@ dat_SA['SUBJID'] = subj_SA
 
 dfs_dec = list()
 dfs_dec.append(dat_SA)
-
+# dfs_dec = dat_SA
 dfs_loglik = list()
 virt = list()
 for x, vg in enumerate(vargroups):
@@ -92,6 +100,15 @@ for x, vg in enumerate(vargroups):
         dat_dec = pd.DataFrame(dec_vis)
         dat_dec.columns = names
         dat_dec['SUBJID'] = subj
+
+        ######
+        # simple merge does not work due to memory error
+        # df_result = pd.DataFrame(columns=(dfs_dec.columns.append(dat_dec.columns)).unique())
+        # df_result.to_csv("decodedVP.csv", index_label=False)
+        # dat_dec.to_csv("temp_data.csv", index_label=False)
+        #
+        # del dat_dec  # to free memory
+        # dfs_dec = pd.merge(dfs_dec, dat_dec, on="SUBJID")
         dfs_dec.append(dat_dec)
 
     loglik_list = helpers.dec_network_loglik(settings, zcodes, scodes, VP=True)
@@ -107,6 +124,10 @@ for x, vg in enumerate(vargroups):
 virt_dic = dict(zip(files, virt))
 decoded_dec = helpers.merge_dat(dfs_dec)
 decoded_dec.to_csv('decodedVP.csv', index=False)
+
+# for e, df in enumerate(dfs_dec):
+#     df.to_csv(f"decodedVP_{str(e)}.csv", index=False)
+
 decoded_loglik = helpers.merge_dat(dfs_loglik)
 decoded_loglik.to_csv('virtual_logliks.csv', index=False)
 
