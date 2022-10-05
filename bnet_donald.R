@@ -104,7 +104,7 @@ print('FIT DONE')
 ############################
 
 # Virtual Patient Generation
-virtual<-simulate_VPs(real,finalBN,fitted,iterative=F,scr,mth,wl,bl)
+virtual<-simulate_VPs(real,finalBN,fitted,iterative=F,scr,mth,wl,bl,n=1312)
 
 ############################
 ############################ save out all data
