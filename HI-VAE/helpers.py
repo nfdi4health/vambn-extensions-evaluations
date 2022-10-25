@@ -16,8 +16,17 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 
 def merge_dat(lis):
     'merge all dataframes in a list on SUBJID'
+    lis = [df.set_index('SUBJID') for df in lis]
     df = pd.concat(lis, axis=1)  # merges based on same column (SUBJID in our case)
     return df
+
+
+# def merge_dat(lis):
+#    'merge all dataframes in a list on SUBJID'
+#    df = lis[0]
+#    for x in lis[1:]:
+#        df=pd.merge(df, x, on = 'SUBJID')
+#    return df
 
 
 def adapt_tensor_length(tensor_in, sample_size):
