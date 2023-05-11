@@ -50,7 +50,7 @@ def set_settings(opts, nepochs=500, modload=False,
 
 sample_size = 1312
 # get file list
-files = [i for i in os.listdir('data_python/') if not '_type' in i and not '_missing' in i]
+files = [i for i in os.listdir('data_python/') if not '_type' in i and not '_missing' in i and not 'DELETE_PLACEHOLDER' in i]
 vargroups = set([i.split('_')[0] for i in files])
 vargroups = ['anthropometric', 'times', 'socioeconomic', 'nutrition']
 print(vargroups)
