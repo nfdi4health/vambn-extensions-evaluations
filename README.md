@@ -6,6 +6,8 @@ For educational and testing purposes, a small dummy data file is also included: 
 
 This repo includes modified scripts for both the fruit and the DONALD data.
 
+There are also scripts for plotting and other useful evaluations of the data available: `evaluation_scripts/`
+
 
 
 ## Setup Notes
