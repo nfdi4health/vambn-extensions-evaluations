@@ -43,7 +43,7 @@ def set_settings(opts, nepochs=500, modload=False,
 
 sample_size = 1024
 # get file list
-files = [i for i in os.listdir('data_python/') if not '_type' in i and not '_missing' in i]
+files = [i for i in os.listdir('data_python/') if not '_type' in i and not '_missing' in i and not 'DELETE_PLACEHOLDER' in i]
 sds = [1]*6
 sdims = dict(zip(files, sds))
 best_hyper = pd.read_csv('donald-results.csv')

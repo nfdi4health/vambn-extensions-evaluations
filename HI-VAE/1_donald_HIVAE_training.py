@@ -78,7 +78,7 @@ for x, f in enumerate(files):
     while np.isnan(last_loss):
         if c > 9:
             print('GAVE UP on file after not converging 10 times!')
-            continue
+            break
         last_loss = helpers.train_network(settings)
         c += 1
         print('!!!', x+1, '/', len(files), ': reran training', c, 'times with final loss of', last_loss)
