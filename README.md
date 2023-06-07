@@ -39,3 +39,15 @@ To run the pipeline, execute the following files, where ??? is your dataset (`fr
   - Reconstructs drawn encodings (virtual participants, VPs)
 
 To reformat the RPs or VPs into the original DONALD format, use `donald_writer.py`
+
+## Citation 
+If you use the code, pease cite:  
+[Paper link](https://arxiv.org/abs/2305.07685)  
+@misc{kühnel2023synthetic,  
+      title={Synthetic data generation for a longitudinal cohort study -- Evaluation, method extension and reproduction of published data analysis results},   
+      author={Lisa Kühnel and Julian Schneider and Ines Perrar and Tim Adams and Fabian Prasser and Ute Nöthlings and Holger Fröhlich and Juliane Fluck},  
+      year={2023},  
+      eprint={2305.07685},  
+      archivePrefix={arXiv},  
+      primaryClass={stat.ME}  
+}  
